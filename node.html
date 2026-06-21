@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>노드 탐험 — AI 기술 계보</title>
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--border:#1e1e2e;--text:#e2e8f0;--muted:#64748b;--c:#6366f1}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+nav{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
+.nav-back{color:var(--muted);text-decoration:none;font-size:0.85rem;display:flex;align-items:center;gap:5px;transition:color .2s}
+.nav-back:hover{color:var(--text)}
+.nav-num{font-family:monospace;font-size:0.8rem;padding:3px 8px;border-radius:5px;background:var(--c)20;color:var(--c)}
+.nav-name{font-weight:700;font-size:0.95rem}
+.nav-r{margin-left:auto;display:flex;gap:8px}
+.nav-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:0.8rem;cursor:pointer;text-decoration:none;transition:all .2s;display:inline-block}
+.nav-btn:hover{border-color:var(--c);color:var(--c)}
+
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:calc(100vh - 53px)}
+@media(max-width:900px){.layout{grid-template-columns:1fr;grid-template-rows:auto 1fr}}
+
+/* Left panel — info */
+.info-panel{padding:32px 28px;border-right:1px solid var(--border);overflow-y:auto;max-height:calc(100vh - 53px)}
+@media(max-width:900px){.info-panel{max-height:none;border-right:none;border-bottom:1px solid var(--border)}}
+
+.node-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;margin-bottom:16px}
+.node-title{font-size:1.8rem;font-weight:800;margin-bottom:8px;line-height:1.2}
+.node-era{font-size:0.8rem;color:var(--muted);margin-bottom:24px}
+
+.info-row{margin-bottom:16px}
+.info-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}
+.info-val{font-size:0.9rem;line-height:1.6;color:var(--text)}
+.info-val.mono{font-family:monospace;background:var(--surface);padding:10px;border-radius:8px;border:1px solid var(--border);font-size:0.82rem}
+
+.steps-flow{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+.step-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid transparent;transition:all .2s;opacity:0.6}
+.step-item.active{border-color:var(--c)40;background:var(--c)08;opacity:1}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--c)20;color:var(--c);font-size:0.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:0.82rem;line-height:1.5}
+
+.kw-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.kw{padding:3px 8px;border-radius:5px;font-size:0.72rem;background:var(--c)15;color:var(--c);border:1px solid var(--c)25}
+
+.ai-connection{margin-top:20px;padding:14px;border-radius:10px;background:linear-gradient(135deg,var(--c)08,transparent);border:1px solid var(--c)20}
+.ai-connection-label{font-size:0.7rem;color:var(--c);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.ai-connection-text{font-size:0.85rem;line-height:1.6}
+
+.node-nav{display:flex;gap:8px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+.nn-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.8rem;cursor:pointer;text-align:center;transition:all .2s;text-decoration:none;display:block}
+.nn-btn:hover{border-color:var(--c);color:var(--c)}
+.nn-btn span{display:block;font-size:0.65rem;color:var(--muted);margin-bottom:2px}
+
+/* Right panel — simulation */
+.sim-panel{display:flex;flex-direction:column;overflow:hidden;max-height:calc(100vh - 53px)}
+@media(max-width:900px){.sim-panel{max-height:80vh;min-height:500px}}
+.sim-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sim-title{font-size:0.85rem;font-weight:600}
+.sim-tag{font-size:0.72rem;padding:3px 10px;border-radius:999px;background:var(--c)15;color:var(--c);border:1px solid var(--c)30}
+.sim-body{flex:1;overflow:auto;padding:20px;position:relative}
+.sim-container{width:100%;height:100%;min-height:400px}
+
+/* Default flow viz */
+.flow-viz{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;height:100%}
+.flow-box{padding:12px 20px;border-radius:10px;border:1px solid var(--c)30;background:var(--c)10;color:var(--text);font-size:0.85rem;text-align:center;max-width:320px;width:100%;transition:all .3s;cursor:default}
+.flow-box.highlight{background:var(--c)25;border-color:var(--c)60;transform:scale(1.03)}
+.flow-arrow-down{color:var(--c);font-size:20px;line-height:1}
+
+/* Canvas & shared sim styles */
+canvas{display:block;border-radius:10px}
+button.sim-btn{padding:8px 18px;border-radius:8px;border:1px solid var(--c)40;background:var(--c)15;color:var(--c);font-size:0.82rem;cursor:pointer;transition:all .2s;font-family:inherit}
+button.sim-btn:hover{background:var(--c)30}
+button.sim-btn.primary{background:var(--c);color:white;border-color:var(--c)}
+button.sim-btn.primary:hover{filter:brightness(1.15)}
+.sim-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.sim-info{font-size:0.8rem;color:var(--muted);margin-top:8px;line-height:1.5}
+input[type=range]{accent-color:var(--c);cursor:pointer}
+.sim-label{font-size:0.78rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-back" href="javascript:history.back()">← 뒤로</a>
+  <span class="nav-num" id="navNum">#001</span>
+  <span class="nav-name" id="navName">노드</span>
+  <div class="nav-r">
+    <a class="nav-btn" id="navCatLink" href="#">카테고리 보기</a>
+  </div>
+</nav>
+
+<div class="layout">
+  <div class="info-panel" id="infoPanel"></div>
+  <div class="sim-panel">
+    <div class="sim-header">
+      <span class="sim-title">🔬 인터랙티브 체험</span>
+      <span class="sim-tag" id="simTag">시뮬레이션</span>
+    </div>
+    <div class="sim-body">
+      <div class="sim-container" id="simContainer"></div>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+// ─── SETUP ──────────────────────────────────────────────────────────────────
+const CAT_COLORS={'A':'#6366f1','B':'#8b5cf6','C':'#a855f7','D':'#ec4899','E':'#f97316','F':'#eab308','G':'#22c55e','H':'#06b6d4','I':'#3b82f6','J':'#a855f7','K':'#14b8a6','L':'#f59e0b','M':'#ef4444'};
+
+const nodeId=parseInt(location.hash.replace('#','')||'1');
+const node=NODES.find(n=>n['번호']===nodeId)||NODES[0];
+const catLetter=node['대분류'][0];
+const color=CAT_COLORS[catLetter]||'#6366f1';
+document.documentElement.style.setProperty('--c',color);
+
+// Nav
+document.getElementById('navNum').textContent='#'+String(nodeId).padStart(3,'0');
+document.getElementById('navName').textContent=node['기술 노드'];
+document.getElementById('navCatLink').href=`category.html#${catLetter}`;
+
+// Info panel
+const steps=(node['처리 절차']||'').split(/→|▶/).map(s=>s.trim()).filter(Boolean);
+const kws=(node['키워드']||'').split(';').map(s=>s.trim()).filter(Boolean);
+const prevNode=NODES.find(n=>n['번호']===nodeId-1);
+const nextNode=NODES.find(n=>n['번호']===nodeId+1);
+
+document.getElementById('infoPanel').innerHTML=`
+  <div class="node-badge" style="background:${color}15;color:${color};border:1px solid ${color}30">
+    ${node['대분류']}
+  </div>
+  <div class="node-title">${node['기술 노드']}</div>
+  <div class="node-era">⏱ ${node['대략적 시기']} &nbsp;·&nbsp; 노드 #${nodeId}</div>
+
+  <div class="info-row">
+    <div class="info-label">하드웨어 / 매체</div>
+    <div class="info-val">${node['하드웨어/매체']||'—'}</div>
+  </div>
+  <div class="info-row">
+    <div class="info-label">표상 · 데이터</div>
+    <div class="info-val">${node['표상·데이터']||'—'}</div>
+  </div>
+  <div class="info-row">
+    <div class="info-label">대표 알고리즘 · 처리 방식</div>
+    <div class="info-val">${node['대표 알고리즘·처리 방식']||'—'}</div>
+  </div>
+  <div class="info-row">
+    <div class="info-label">처리 절차</div>
+    <div class="steps-flow" id="stepsFlow">
+      ${steps.map((s,i)=>`<div class="step-item" data-i="${i}">
+        <div class="step-num">${i+1}</div>
+        <div class="step-text">${s}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="info-row">
+    <div class="info-label">모델 · 학습 원리</div>
+    <div class="info-val">${node['모델·학습/원리']||'—'}</div>
+  </div>
+  <div class="info-row">
+    <div class="info-label">과제 처리 예시</div>
+    <div class="info-val mono">${node['과제 처리']||'—'}</div>
+  </div>
+  <div class="info-row">
+    <div class="info-label">키워드</div>
+    <div class="kw-list">${kws.map(k=>`<span class="kw">${k}</span>`).join('')}</div>
+  </div>
+  <div class="ai-connection">
+    <div class="ai-connection-label">→ AI 관련성 / 다음 연결</div>
+    <div class="ai-connection-text">${node['AI 관련성/다음 연결']||'—'}</div>
+  </div>
+  <div class="node-nav">
+    ${prevNode?`<a class="nn-btn" href="node.html#${prevNode['번호']}"><span>← 이전</span>${prevNode['기술 노드']}</a>`:'<span></span>'}
+    ${nextNode?`<a class="nn-btn" href="node.html#${nextNode['번호']}"><span>다음 →</span>${nextNode['기술 노드']}</a>`:''}
+  </div>
+`;
+
+// Animate steps
+let stepIdx=0;
+function animateSteps(){
+  const items=document.querySelectorAll('.step-item');
+  items.forEach((el,i)=>el.classList.toggle('active',i===stepIdx));
+  stepIdx=(stepIdx+1)%Math.max(steps.length,1);
+}
+animateSteps();
+setInterval(animateSteps,1800);
+
+// ─── SIMULATIONS ────────────────────────────────────────────────────────────
+const sc=document.getElementById('simContainer');
+
+function defaultFlowSim(){
+  document.getElementById('simTag').textContent='처리 흐름 시각화';
+  const boxes=[
+    node['표상·데이터']||'입력 데이터',
+    node['대표 알고리즘·처리 방식']||'처리',
+    node['모델·학습/원리']||'모델/원리',
+    node['적용·영향']||'결과/적용'
+  ];
+  sc.innerHTML=`<div class="flow-viz" id="fv">`+
+    boxes.map((b,i)=>`<div class="flow-box" id="fb${i}">${b}</div>${i<boxes.length-1?'<div class="flow-arrow-down">↓</div>':''}`).join('')+
+  `</div>`;
+  let fi=0;
+  setInterval(()=>{
+    document.querySelectorAll('.flow-box').forEach((el,i)=>el.classList.toggle('highlight',i===fi));
+    fi=(fi+1)%boxes.length;
+  },1200);
+}
+
+// ── Node 1: 수량 감각 ──
+function sim1(){
+  document.getElementById('simTag').textContent='수량 비교 체험';
+  sc.innerHTML=`
+    <div style="text-align:center;padding:10px">
+      <p class="sim-info" style="margin-bottom:16px">어느 쪽에 점이 더 많을까요? 빠르게 직관으로 판단해보세요!</p>
+      <div id="dotArena" style="display:flex;gap:20px;justify-content:center;margin-bottom:16px"></div>
+      <div id="dotResult" style="font-size:1rem;font-weight:700;min-height:32px;color:var(--c)"></div>
+      <div class="sim-controls" style="justify-content:center;margin-top:12px">
+        <button class="sim-btn primary" onclick="newDotRound()">새 문제</button>
+        <span class="sim-info" id="dotScore">정답: 0 / 0</span>
+      </div>
+    </div>`;
+  window._dotScore=[0,0];
+  window.newDotRound=function(){
+    document.getElementById('dotResult').textContent='';
+    const a=5+Math.floor(Math.random()*20), b=5+Math.floor(Math.random()*20);
+    window._dotAns=a>b?'left':'right';
+    const arena=document.getElementById('dotArena');
+    arena.innerHTML='';
+    ['left','right'].forEach((side,si)=>{
+      const n=si===0?a:b;
+      const box=document.createElement('div');
+      box.style.cssText=`width:150px;height:150px;background:#ffffff08;border-radius:12px;border:2px solid var(--border);cursor:pointer;position:relative;transition:border-color .2s;flex-shrink:0`;
+      box.onmouseover=()=>box.style.borderColor=color;
+      box.onmouseleave=()=>box.style.borderColor='var(--border)';
+      for(let i=0;i<n;i++){
+        const dot=document.createElement('div');
+        dot.style.cssText=`position:absolute;width:10px;height:10px;border-radius:50%;background:${color};left:${10+Math.random()*120}px;top:${10+Math.random()*120}px`;
+        box.appendChild(dot);
+      }
+      box.onclick=()=>{
+        const correct=(side===window._dotAns);
+        window._dotScore[1]++;
+        if(correct)window._dotScore[0]++;
+        document.getElementById('dotResult').textContent=correct?'✅ 정답!':'❌ 틀렸어요. '+((a>b)?'왼쪽':'오른쪽')+'이 더 많아요.';
+        document.getElementById('dotScore').textContent=`정답: ${window._dotScore[0]} / ${window._dotScore[1]}`;
+      };
+      arena.appendChild(box);
+    });
+  };
+  window.newDotRound();
+}
+
+// ── Node 3: 표식 기록 ──
+function sim3(){
+  document.getElementById('simTag').textContent='탤리 마크 체험';
+  sc.innerHTML=`
+    <div style="text-align:center;padding:10px">
+      <p class="sim-info" style="margin-bottom:12px">클릭해서 표식(탤리 마크)을 새기세요. 5개마다 묶음이 됩니다.</p>
+      <div id="tallyDisplay" style="font-size:2.5rem;min-height:60px;letter-spacing:6px;margin:16px 0;color:var(--c)"></div>
+      <div id="tallyCount" style="font-size:1rem;color:var(--muted);margin-bottom:16px">총 0개</div>
+      <div class="sim-controls" style="justify-content:center">
+        <button class="sim-btn primary" id="tallBtn" style="font-size:1.1rem;padding:12px 24px">＋ 표식 추가</button>
+        <button class="sim-btn" onclick="document.getElementById('tallyDisplay').textContent='';document.getElementById('tallyCount').textContent='총 0개';_tc=0">초기화</button>
+      </div>
+    </div>`;
+  window._tc=0;
+  document.getElementById('tallBtn').onclick=function(){
+    window._tc++;
+    const groups=Math.floor(window._tc/5);
+    const rem=window._tc%5;
+    let s='';
+    for(let i=0;i<groups;i++)s+='𝍫 ';
+    for(let i=0;i<rem;i++)s+='| ';
+    document.getElementById('tallyDisplay').textContent=s||'';
+    document.getElementById('tallyCount').textContent=`총 ${window._tc}개 (${groups>0?groups+'묶음':''}${rem>0?' '+rem+'개':''})`;
+  };
+}
+
+// ── Node 8: 진법 ──
+function sim8(){
+  document.getElementById('simTag').textContent='진법 변환기';
+  sc.innerHTML=`
+    <div style="padding:10px">
+      <p class="sim-info" style="margin-bottom:16px">숫자를 입력하거나 슬라이더를 움직여 진법 변환을 체험하세요.</p>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <input type="range" id="bSlider" min="0" max="255" value="42" style="flex:1">
+        <input type="number" id="bNum" value="42" min="0" max="255" style="width:70px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.9rem">
+      </div>
+      <div id="baseCards" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+    </div>`;
+  function updateBases(v){
+    v=Math.max(0,Math.min(255,v));
+    document.getElementById('bSlider').value=v;
+    document.getElementById('bNum').value=v;
+    const bases=[
+      {name:'2진법 (Binary)',base:2,prefix:'0b'},
+      {name:'8진법 (Octal)',base:8,prefix:'0o'},
+      {name:'10진법 (Decimal)',base:10,prefix:''},
+      {name:'16진법 (Hex)',base:16,prefix:'0x'}
+    ];
+    document.getElementById('baseCards').innerHTML=bases.map(b=>`
+      <div style="padding:14px;border-radius:10px;border:1px solid var(--c)30;background:var(--c)08">
+        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:6px">${b.name}</div>
+        <div style="font-size:1.1rem;font-weight:700;font-family:monospace;color:var(--c)">${b.prefix}${v.toString(b.base).toUpperCase()}</div>
+      </div>`).join('');
+    // Visual bit display
+  }
+  document.getElementById('bSlider').oninput=e=>updateBases(+e.target.value);
+  document.getElementById('bNum').oninput=e=>updateBases(+e.target.value);
+  updateBases(42);
+}
+
+// ── Node 9: 좌표계 ──
+function sim9(){
+  document.getElementById('simTag').textContent='좌표계 체험';
+  sc.innerHTML=`<canvas id="coordCanvas" style="cursor:crosshair;max-width:100%"></canvas>
+    <div class="sim-info" id="coordInfo" style="margin-top:8px">캔버스를 클릭해 점을 찍어보세요.</div>
+    <div class="sim-controls"><button class="sim-btn" onclick="coordPoints=[];drawCoord()">지우기</button></div>`;
+  const canvas=document.getElementById('coordCanvas');
+  const W=canvas.width=Math.min(sc.offsetWidth-40,500);
+  const H=canvas.height=Math.min(sc.offsetHeight-80,400);
+  const ctx=canvas.getContext('2d');
+  const pts=[];
+  window.coordPoints=pts;
+  function drawCoord(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#111118';ctx.fillRect(0,0,W,H);
+    const ox=W/2,oy=H/2,sc2=Math.min(W,H)/12;
+    // Grid
+    ctx.strokeStyle='#1e1e2e';ctx.lineWidth=1;
+    for(let x=-10;x<=10;x++){ctx.beginPath();ctx.moveTo(ox+x*sc2,0);ctx.lineTo(ox+x*sc2,H);ctx.stroke()}
+    for(let y=-10;y<=10;y++){ctx.beginPath();ctx.moveTo(0,oy+y*sc2);ctx.lineTo(W,oy+y*sc2);ctx.stroke()}
+    // Axes
+    ctx.strokeStyle=color;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(W,oy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ox,0);ctx.lineTo(ox,H);ctx.stroke();
+    // Labels
+    ctx.fillStyle='#64748b';ctx.font='11px monospace';ctx.textAlign='center';
+    for(let x=-5;x<=5;x+=2){if(x===0)continue;ctx.fillText(x,ox+x*sc2,oy+14)}
+    ctx.textAlign='right';
+    for(let y=-5;y<=5;y+=2){if(y===0)continue;ctx.fillText(-y,ox-4,oy+y*sc2+4)}
+    ctx.fillStyle=color;ctx.font='bold 13px monospace';ctx.textAlign='center';
+    ctx.fillText('x',W-10,oy-8);ctx.fillText('y',ox+10,12);
+    // Points
+    window.coordPoints.forEach((p,i)=>{
+      ctx.beginPath();ctx.arc(p.px,p.py,5,0,Math.PI*2);
+      ctx.fillStyle=color;ctx.fill();
+      ctx.fillStyle='#fff';ctx.font='11px monospace';
+      ctx.fillText(`(${p.cx.toFixed(1)}, ${p.cy.toFixed(1)})`,p.px,p.py-10);
+    });
+  }
+  canvas.onclick=function(e){
+    const r=canvas.getBoundingClientRect();
+    const px=e.clientX-r.left,py=e.clientY-r.top;
+    const sc2=Math.min(W,H)/12;
+    const cx=(px-W/2)/sc2, cy=-(py-H/2)/sc2;
+    window.coordPoints.push({px,py,cx,cy});
+    document.getElementById('coordInfo').textContent=`마지막 점: (${cx.toFixed(2)}, ${cy.toFixed(2)}) — 총 ${window.coordPoints.length}개`;
+    drawCoord();
+  };
+  drawCoord();
+}
+
+// ── Node 11: 미분 ──
+function sim11(){
+  document.getElementById('simTag').textContent='미분 — 기울기 체험';
+  sc.innerHTML=`
+    <canvas id="diffCanvas" style="max-width:100%"></canvas>
+    <div class="sim-controls" style="margin-top:8px">
+      <span class="sim-label">x 위치:</span>
+      <input type="range" id="diffX" min="-30" max="30" value="10" style="flex:1">
+      <span id="diffVal" style="font-family:monospace;font-size:0.8rem;color:var(--c)">x=1.0</span>
+    </div>
+    <div class="sim-info" id="diffInfo" style="margin-top:6px"></div>`;
+  const canvas=document.getElementById('diffCanvas');
+  const W=canvas.width=Math.min(sc.offsetWidth-40,500);
+  const H=canvas.height=280;
+  const ctx=canvas.getContext('2d');
+  function f(x){return 0.1*x*x-0.5}
+  function df(x){return 0.2*x}
+  function drawDiff(xv){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#111118';ctx.fillRect(0,0,W,H);
+    const ox=W/2,oy=H/2,s=18;
+    ctx.strokeStyle='#1e1e2e';ctx.lineWidth=1;
+    for(let x=-15;x<=15;x++){ctx.beginPath();ctx.moveTo(ox+x*s,0);ctx.lineTo(ox+x*s,H);ctx.stroke()}
+    for(let y=-5;y<=5;y++){ctx.beginPath();ctx.moveTo(0,oy+y*s*2);ctx.lineTo(W,oy+y*s*2);ctx.stroke()}
+    ctx.strokeStyle='#2d2d4e';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(W,oy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ox,0);ctx.lineTo(ox,H);ctx.stroke();
+    // Curve
+    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.beginPath();
+    for(let px=0;px<=W;px++){const x=(px-ox)/s;const y=f(x);ctx.lineTo(px,oy-y*s*2)}
+    ctx.stroke();
+    // Tangent
+    const slope=df(xv);
+    const y0=f(xv);
+    ctx.strokeStyle='#f97316';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();
+    const x1=-8,x2=8;
+    ctx.moveTo(ox+x1*s,oy-(y0+slope*(x1-xv))*s*2);
+    ctx.lineTo(ox+x2*s,oy-(y0+slope*(x2-xv))*s*2);
+    ctx.stroke();ctx.setLineDash([]);
+    // Point
+    ctx.beginPath();ctx.arc(ox+xv*s,oy-y0*s*2,6,0,Math.PI*2);
+    ctx.fillStyle='#f97316';ctx.fill();
+    document.getElementById('diffVal').textContent=`x=${xv.toFixed(1)}`;
+    document.getElementById('diffInfo').textContent=`f(${xv.toFixed(1)}) = ${f(xv).toFixed(2)},  기울기 f'(x) = ${slope.toFixed(2)}  —  기울기가 0이면 극값(최대/최소)!`;
+  }
+  document.getElementById('diffX').oninput=e=>drawDiff(e.target.value/10);
+  drawDiff(1.0);
+}
+
+// ── Node 13: 확률 ──
+function sim13(){
+  document.getElementById('simTag').textContent='확률 — 주사위 실험';
+  sc.innerHTML=`
+    <div style="padding:10px;text-align:center">
+      <div id="diceDisplay" style="font-size:3rem;margin:10px 0">🎲</div>
+      <div id="diceResult" style="font-size:1.2rem;font-weight:700;color:var(--c);margin-bottom:10px">던져보세요!</div>
+      <canvas id="diceChart" width="400" height="160" style="max-width:100%;border-radius:10px;border:1px solid var(--border)"></canvas>
+      <div class="sim-controls" style="justify-content:center;margin-top:10px">
+        <button class="sim-btn primary" onclick="rollDice(1)">1번 던지기</button>
+        <button class="sim-btn" onclick="rollDice(10)">10번</button>
+        <button class="sim-btn" onclick="rollDice(100)">100번</button>
+        <button class="sim-btn" onclick="diceReset()">초기화</button>
+      </div>
+      <div class="sim-info" id="diceInfo" style="margin-top:8px">각 눈금 이론 확률 = 1/6 ≈ 16.7%</div>
+    </div>`;
+  const faces=['⚀','⚁','⚂','⚃','⚄','⚅'];
+  const counts=[0,0,0,0,0,0]; let total=0;
+  window.diceReset=function(){counts.fill(0);total=0;document.getElementById('diceResult').textContent='던져보세요!';document.getElementById('diceDisplay').textContent='🎲';drawDiceChart()};
+  window.rollDice=function(n){
+    let last=0;
+    for(let i=0;i<n;i++){last=Math.floor(Math.random()*6);counts[last]++;total++;}
+    document.getElementById('diceDisplay').textContent=faces[last];
+    document.getElementById('diceResult').textContent=`${last+1}이 나왔어요! (총 ${total}번)`;
+    drawDiceChart();
+  };
+  function drawDiceChart(){
+    const c=document.getElementById('diceChart');
+    const ctx=c.getContext('2d'),W=c.width,H=c.height;
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#111118';ctx.fillRect(0,0,W,H);
+    const max=Math.max(...counts,1);
+    const bw=50,gap=10,startX=20,barH=H-40;
+    for(let i=0;i<6;i++){
+      const x=startX+i*(bw+gap);
+      const h=total>0?(counts[i]/total)*barH:0;
+      ctx.fillStyle=color+'30';ctx.fillRect(x,H-30-barH,bw,barH);
+      ctx.fillStyle=color;ctx.fillRect(x,H-30-h,bw,h);
+      ctx.fillStyle='#e2e8f0';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+      ctx.fillText(faces[i],x+bw/2,H-10);
+      if(counts[i]>0){ctx.font='11px monospace';ctx.fillStyle='#94a3b8';ctx.fillText(counts[i],x+bw/2,H-30-h-4)}
+    }
+    // Theory line
+    const ty=(1/6)*barH;ctx.strokeStyle='#f97316';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(startX,H-30-ty);ctx.lineTo(startX+(bw+gap)*6,H-30-ty);ctx.stroke();ctx.setLineDash([]);
+  }
+  drawDiceChart();
+}
+
+// ── Node 18: 주판 ──
+function sim18(){
+  document.getElementById('simTag').textContent='주판 시뮬레이터';
+  const cols=9;
+  let state=Array(cols).fill(0).map(()=>({top:2,bot:5}));
+  let topActive=Array(cols).fill(0);
+  let botActive=Array(cols).fill(0);
+
+  sc.innerHTML=`<canvas id="abacusC" style="max-width:100%;cursor:pointer;border-radius:10px"></canvas>
+    <div class="sim-info" id="abacusVal" style="margin-top:8px;text-align:center;font-family:monospace;font-size:1.1rem"></div>
+    <div class="sim-controls" style="justify-content:center;margin-top:6px"><button class="sim-btn" onclick="resetAbacus()">초기화</button></div>`;
+
+  const canvas=document.getElementById('abacusC');
+  const W=canvas.width=Math.min(sc.offsetWidth-20,520);
+  const H=canvas.height=260;
+  const ctx=canvas.getContext('2d');
+  const colW=W/(cols+1), beadR=colW*0.32;
+
+  window.resetAbacus=function(){topActive.fill(0);botActive.fill(0);drawAbacus()};
+
+  function getVal(){
+    let v=0;
+    for(let c=0;c<cols;c++){
+      const place=Math.pow(10,cols-1-c);
+      v+=(topActive[c]*5+botActive[c])*place;
+    }
+    return v;
+  }
+
+  function drawAbacus(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#1a1008';ctx.beginPath();ctx.roundRect(4,4,W-8,H-8,12);ctx.fill();
+    ctx.strokeStyle='#8b5e1a';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(4,4,W-8,H-8,12);ctx.stroke();
+    // Divider
+    ctx.fillStyle='#8b5e1a';ctx.fillRect(0,H*0.42,W,6);
+    // Beads
+    for(let c=0;c<cols;c++){
+      const x=(c+1)*colW;
+      // Rod
+      ctx.strokeStyle='#555';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,10);ctx.lineTo(x,H-10);ctx.stroke();
+      // Top section: 2 beads (value 5 each)
+      const topY1=H*0.42-beadR*2.5;
+      const topY2=H*0.42-beadR*0.5;
+      for(let b=0;b<2;b++){
+        const active=topActive[c]>=(2-b);
+        const y=active?(b===1?topY2:topY2-beadR*2.2):(b===0?H*0.06:H*0.06+beadR*2.2);
+        ctx.beginPath();ctx.ellipse(x,y,beadR,beadR*0.65,0,0,Math.PI*2);
+        ctx.fillStyle=active?color:'#c8a04a';ctx.fill();
+        ctx.strokeStyle='#00000040';ctx.lineWidth=1;ctx.stroke();
+        if(active){ctx.font=`bold ${Math.round(beadR*0.6)}px monospace`;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('5',x,y)}
+      }
+      // Bottom section: 5 beads (value 1 each)
+      const botStart=H*0.42+beadR*0.5;
+      for(let b=0;b<5;b++){
+        const active=botActive[c]>b;
+        const baseY=botStart+beadR*0.5;
+        const y=active?H-beadR*(5-b)*2.0:baseY+beadR*2*b+beadR;
+        ctx.beginPath();ctx.ellipse(x,y,beadR,beadR*0.65,0,0,Math.PI*2);
+        ctx.fillStyle=active?color:'#c8a04a';ctx.fill();
+        ctx.strokeStyle='#00000040';ctx.lineWidth=1;ctx.stroke();
+      }
+      // Column value
+      const cv=topActive[c]*5+botActive[c];
+      ctx.font=`bold 11px monospace`;ctx.fillStyle='#94a3b8';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(cv,x,H-8);
+    }
+    document.getElementById('abacusVal').textContent=`현재 값: ${getVal().toLocaleString()}`;
+  }
+
+  canvas.onclick=function(e){
+    const r=canvas.getBoundingClientRect();
+    const mx=(e.clientX-r.left)*(W/r.width), my=(e.clientY-r.top)*(H/r.height);
+    for(let c=0;c<cols;c++){
+      const x=(c+1)*colW;
+      if(Math.abs(mx-x)>beadR*1.5)continue;
+      if(my<H*0.42){topActive[c]=(topActive[c]===0?1:topActive[c]===1?2:0);}
+      else{
+        const botStart=H*0.42+beadR*0.5;
+        const bIdx=Math.floor((my-botStart)/(beadR*2));
+        if(bIdx>=0&&bIdx<5)botActive[c]=botActive[c]===bIdx+1?bIdx:bIdx+1;
+      }
+    }
+    drawAbacus();
+  };
+  drawAbacus();
+}
+
+// ── Node 36: 튜링 기계 ──
+function sim36(){
+  document.getElementById('simTag').textContent='튜링 기계 시뮬레이터';
+  // Simple Turing machine: adds 1 to binary number
+  const TAPE_SIZE=20;
+  let tape=Array(TAPE_SIZE).fill('0');
+  let head=8; let state='q0'; let running=false; let interval=null;
+  // Program: increment binary number (q0: scan right to end, q1: add 1 from right)
+  const prog={'q0':{'0':['q0','0','R'],'1':['q0','1','R'],'B':['q1','B','L']},
+               'q1':{'0':['halt','1','N'],'1':['q1','0','L'],'B':['halt','1','N'],'halt':{}}};
+  tape[4]='1';tape[5]='0';tape[6]='1'; // binary 101 = 5
+
+  sc.innerHTML=`
+    <div style="padding:8px">
+      <p class="sim-info" style="margin-bottom:10px">2진수 101 (=5)에 1을 더하는 튜링 기계입니다. 헤드가 오른쪽 끝까지 가서 올림수를 처리합니다.</p>
+      <div id="tmTape" style="display:flex;gap:2px;justify-content:center;margin:12px 0;overflow-x:auto;padding:4px"></div>
+      <div id="tmState" style="text-align:center;font-family:monospace;font-size:0.9rem;color:var(--c);margin-bottom:10px"></div>
+      <div class="sim-controls" style="justify-content:center">
+        <button class="sim-btn" onclick="tmStep()">한 단계</button>
+        <button class="sim-btn primary" onclick="tmRun()" id="tmRunBtn">자동 실행</button>
+        <button class="sim-btn" onclick="tmReset()">초기화</button>
+      </div>
+      <div class="sim-info" id="tmLog" style="margin-top:10px;min-height:40px"></div>
+    </div>`;
+
+  function renderTM(){
+    const div=document.getElementById('tmTape');
+    div.innerHTML='';
+    for(let i=0;i<TAPE_SIZE;i++){
+      const cell=document.createElement('div');
+      const isHead=i===head;
+      cell.style.cssText=`width:28px;height:36px;flex-shrink:0;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-weight:700;font-size:1rem;transition:all .3s;border:2px solid ${isHead?color:'var(--border)'};background:${isHead?color+'30':'var(--surface)'};color:${tape[i]==='0'?'var(--muted)':'var(--text)'}`;
+      cell.textContent=tape[i]==='B'?'⬜':tape[i];
+      if(isHead){const arrow=document.createElement('div');arrow.style.cssText='position:absolute;font-size:10px';cell.style.position='relative';cell.appendChild(arrow)}
+      div.appendChild(cell);
+    }
+    document.getElementById('tmState').textContent=`상태: ${state} | 헤드 위치: ${head} | 테이프: ${tape.join('').replace(/B/g,'_')}`;
+  }
+
+  window.tmStep=function(){
+    if(state==='halt'){document.getElementById('tmLog').textContent='✅ 완료! 결과: '+tape.join('').replace(/B/g,'').replace(/^0+/,'')+'₂';return false}
+    const sym=tape[head]==='0'||tape[head]==='1'?tape[head]:(tape[head]||'B');
+    const rule=(prog[state]||{})[sym]||(prog[state]||{})['B'];
+    if(!rule){state='halt';renderTM();return false}
+    const [ns,wr,mv]=rule;
+    tape[head]=wr;
+    state=ns;
+    if(mv==='R')head++;else if(mv==='L')head--;
+    head=Math.max(0,Math.min(TAPE_SIZE-1,head));
+    renderTM();
+    if(state==='halt'){
+      const result=tape.join('').replace(/B/g,'').replace(/^0+/,'');
+      const dec=parseInt(result,2);
+      document.getElementById('tmLog').textContent=`✅ 완료! 101₂ + 1 = ${result}₂ = ${dec}₁₀`;
+      return false;
+    }
+    return true;
+  };
+
+  window.tmRun=function(){
+    if(running){clearInterval(interval);running=false;document.getElementById('tmRunBtn').textContent='자동 실행';return}
+    running=true;document.getElementById('tmRunBtn').textContent='멈추기';
+    interval=setInterval(()=>{if(!window.tmStep()||state==='halt'){clearInterval(interval);running=false;document.getElementById('tmRunBtn').textContent='자동 실행'}},400);
+  };
+
+  window.tmReset=function(){
+    clearInterval(interval);running=false;
+    tape=Array(TAPE_SIZE).fill('B');
+    tape[4]='1';tape[5]='0';tape[6]='1';
+    head=4;state='q0';
+    document.getElementById('tmRunBtn').textContent='자동 실행';
+    document.getElementById('tmLog').textContent='';
+    renderTM();
+  };
+
+  renderTM();
+}
+
+// ── Node 39: 논리 게이트 ──
+function sim39(){
+  document.getElementById('simTag').textContent='논리 게이트 체험';
+  sc.innerHTML=`
+    <div style="padding:8px">
+      <p class="sim-info" style="margin-bottom:10px">두 입력값(A, B)을 바꿔가며 각 논리 게이트의 출력을 확인해보세요.</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:16px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <span style="font-family:monospace;font-size:1.1rem;color:var(--c)">A =</span>
+          <input type="checkbox" id="gateA" style="width:20px;height:20px;accent-color:var(--c)">
+          <span id="aLabel" style="font-family:monospace;font-size:1rem">0</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <span style="font-family:monospace;font-size:1.1rem;color:var(--c)">B =</span>
+          <input type="checkbox" id="gateB" style="width:20px;height:20px;accent-color:var(--c)">
+          <span id="bLabel" style="font-family:monospace;font-size:1rem">0</span>
+        </label>
+      </div>
+      <div id="gateTable" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px"></div>
+    </div>`;
+
+  const gates=[
+    {name:'AND', fn:(a,b)=>a&&b, sym:'A · B'},
+    {name:'OR', fn:(a,b)=>a||b, sym:'A + B'},
+    {name:'NOT A', fn:(a,b)=>!a, sym:'¬A'},
+    {name:'NAND', fn:(a,b)=>!(a&&b), sym:'¬(A·B)'},
+    {name:'NOR', fn:(a,b)=>!(a||b), sym:'¬(A+B)'},
+    {name:'XOR', fn:(a,b)=>a^b, sym:'A ⊕ B'},
+    {name:'XNOR', fn:(a,b)=>!(a^b), sym:'¬(A⊕B)'},
+  ];
+
+  function update(){
+    const a=document.getElementById('gateA').checked;
+    const b=document.getElementById('gateB').checked;
+    document.getElementById('aLabel').textContent=a?'1':'0';
+    document.getElementById('bLabel').textContent=b?'1':'0';
+    const t=document.getElementById('gateTable');
+    t.innerHTML=gates.map(g=>{
+      const out=g.fn(a?1:0,b?1:0)?1:0;
+      return `<div style="padding:12px;border-radius:10px;border:1px solid ${out?color+'60':'var(--border)'};background:${out?color+'15':'var(--surface)'};text-align:center;transition:all .2s">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px">${g.sym}</div>
+        <div style="font-size:1rem;font-weight:700">${g.name}</div>
+        <div style="font-size:1.8rem;font-weight:900;color:${out?color:'var(--muted)'};margin-top:4px">${out}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('gateA').onchange=update;
+  document.getElementById('gateB').onchange=update;
+  update();
+}
+
+// ── Node 68: 스택 ──
+function sim68(){
+  document.getElementById('simTag').textContent='스택 (Stack) 시뮬레이터';
+  let stack=[];
+  sc.innerHTML=`
+    <div style="padding:8px">
+      <p class="sim-info" style="margin-bottom:10px">스택은 <b>LIFO</b>(Last In, First Out) — 마지막에 넣은 것이 먼저 나옵니다.</p>
+      <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+        <input id="stackInput" type="text" placeholder="값 입력..." style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.9rem">
+        <button class="sim-btn primary" onclick="stackPush()">Push ↑</button>
+        <button class="sim-btn" onclick="stackPop()">Pop ↓</button>
+      </div>
+      <div id="stackViz" style="display:flex;flex-direction:column;align-items:center;gap:4px;min-height:200px;padding:8px;border:2px solid var(--border);border-radius:10px;justify-content:flex-end"></div>
+      <div class="sim-info" id="stackLog" style="margin-top:8px"></div>
+    </div>`;
+
+  window.stackPush=function(){
+    const v=document.getElementById('stackInput').value.trim()||'?';
+    if(stack.length>=8){document.getElementById('stackLog').textContent='스택이 가득 찼습니다! (최대 8)';return}
+    stack.push(v);document.getElementById('stackInput').value='';
+    document.getElementById('stackLog').textContent=`push("${v}") — 스택 크기: ${stack.length}`;
+    renderStack();
+  };
+  window.stackPop=function(){
+    if(!stack.length){document.getElementById('stackLog').textContent='스택이 비었습니다!';return}
+    const v=stack.pop();
+    document.getElementById('stackLog').textContent=`pop() → "${v}" 반환 — 스택 크기: ${stack.length}`;
+    renderStack();
+  };
+
+  function renderStack(){
+    const div=document.getElementById('stackViz');
+    div.innerHTML='';
+    if(!stack.length){div.innerHTML='<div style="color:var(--muted);font-size:0.85rem">(비어있음)</div>';return}
+    const top=document.createElement('div');top.style.cssText='font-size:0.65rem;color:var(--c);font-weight:700;margin-bottom:2px';top.textContent='← TOP (마지막 입력)';div.appendChild(top);
+    [...stack].reverse().forEach((v,i)=>{
+      const el=document.createElement('div');
+      el.style.cssText=`width:200px;padding:10px 16px;border-radius:8px;text-align:center;font-weight:700;font-family:monospace;transition:all .3s;border:1px solid ${i===0?color:'var(--border)'};background:${i===0?color+'25':'var(--surface)'};color:${i===0?color:'var(--text)'}`;
+      el.textContent=v;
+      div.appendChild(el);
+    });
+    const bot=document.createElement('div');bot.style.cssText='font-size:0.65rem;color:var(--muted);margin-top:2px';bot.textContent='↑ BOTTOM';div.appendChild(bot);
+  }
+  renderStack();
+}
+
+// ── Node 73: 정렬 ──
+function sim73(){
+  document.getElementById('simTag').textContent='정렬 알고리즘 시각화';
+  let arr=[],animating=false;
+  sc.innerHTML=`
+    <div style="padding:8px">
+      <canvas id="sortCanvas" style="border-radius:8px;max-width:100%"></canvas>
+      <div class="sim-controls" style="margin-top:8px">
+        <button class="sim-btn" onclick="sortNew()">새 배열</button>
+        <button class="sim-btn primary" onclick="runBubble()">버블 정렬</button>
+        <button class="sim-btn" onclick="runSelect()">선택 정렬</button>
+      </div>
+      <div class="sim-info" id="sortLog" style="margin-top:8px"></div>
+    </div>`;
+  const canvas=document.getElementById('sortCanvas');
+  canvas.width=Math.min(sc.offsetWidth-20,500);canvas.height=200;
+  const ctx=canvas.getContext('2d');
+  let highlight=new Set();
+
+  window.sortNew=function(){
+    arr=Array.from({length:20},()=>5+Math.floor(Math.random()*90));
+    highlight.clear();document.getElementById('sortLog').textContent='';drawSort();
+  };
+
+  function drawSort(){
+    const W=canvas.width,H=canvas.height;
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#111118';ctx.fillRect(0,0,W,H);
+    const bw=Math.floor(W/arr.length)-1;
+    arr.forEach((v,i)=>{
+      const h=(v/100)*(H-20);
+      ctx.fillStyle=highlight.has(i)?color:'#3b4070';
+      ctx.beginPath();ctx.roundRect(2+i*(bw+1),H-h,bw,h,2);ctx.fill();
+    });
+  }
+
+  async function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+
+  window.runBubble=async function(){
+    if(animating)return;animating=true;
+    let swaps=0;
+    for(let i=0;i<arr.length;i++){
+      for(let j=0;j<arr.length-i-1;j++){
+        highlight=new Set([j,j+1]);drawSort();
+        await sleep(40);
+        if(arr[j]>arr[j+1]){[arr[j],arr[j+1]]=[arr[j+1],arr[j]];swaps++}
+      }
+    }
+    highlight.clear();drawSort();
+    document.getElementById('sortLog').textContent=`버블 정렬 완료! 교환 횟수: ${swaps}`;
+    animating=false;
+  };
+
+  window.runSelect=async function(){
+    if(animating)return;animating=true;
+    let swaps=0;
+    for(let i=0;i<arr.length;i++){
+      let minI=i;
+      for(let j=i+1;j<arr.length;j++){
+        highlight=new Set([i,j,minI]);drawSort();await sleep(30);
+        if(arr[j]<arr[minI])minI=j;
+      }
+      if(minI!==i){[arr[i],arr[minI]]=[arr[minI],arr[i]];swaps++}
+    }
+    highlight.clear();drawSort();
+    document.getElementById('sortLog').textContent=`선택 정렬 완료! 교환 횟수: ${swaps}`;
+    animating=false;
+  };
+
+  sortNew();
+}
+
+// ── Node 74: 이진 탐색 ──
+function sim74(){
+  document.getElementById('simTag').textContent='이진 탐색 시각화';
+  let arr=[],target=0,lo=0,hi=0,mid=0,found=false,step=0;
+  sc.innerHTML=`
+    <div style="padding:8px">
+      <p class="sim-info" style="margin-bottom:10px">정렬된 배열에서 절반씩 줄여가며 탐색합니다.</p>
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+        <span class="sim-label">목표값:</span>
+        <input type="number" id="bsTarget" value="42" style="width:80px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
+        <button class="sim-btn" onclick="bsNew()">새 배열</button>
+        <button class="sim-btn primary" onclick="bsStep()">한 단계 →</button>
+        <button class="sim-btn" onclick="bsAuto()">자동</button>
+      </div>
+      <div id="bsArr" style="display:flex;gap:3px;flex-wrap:wrap;margin:10px 0"></div>
+      <div class="sim-info" id="bsLog" style="margin-top:8px;min-height:40px"></div>
+    </div>`;
+
+  window.bsNew=function(){
+    arr=Array.from({length:20},(_,i)=>i*5+Math.floor(Math.random()*5)).sort((a,b)=>a-b);
+    arr=[...new Set(arr)];
+    target=+document.getElementById('bsTarget').value;
+    lo=0;hi=arr.length-1;mid=Math.floor((lo+hi)/2);found=false;step=0;
+    renderBS();
+    document.getElementById('bsLog').textContent=`배열 크기 ${arr.length}, 목표: ${target}`;
+  };
+
+  function renderBS(){
+    const div=document.getElementById('bsArr');
+    div.innerHTML=arr.map((v,i)=>{
+      let bg='var(--surface)',border='var(--border)',fc='var(--text)';
+      if(i===mid&&!found){bg=color+'30';border=color;fc=color}
+      else if(i<lo||i>hi){bg='#ffffff05';fc='#333'}
+      return `<div style="padding:6px 10px;border-radius:6px;font-family:monospace;font-size:0.82rem;font-weight:600;background:${bg};border:1px solid ${border};color:${fc};transition:all .3s">${v}</div>`;
+    }).join('');
+  }
+
+  window.bsStep=function(){
+    if(found||lo>hi){document.getElementById('bsLog').textContent=found?`✅ ${target} 찾음! 인덱스 ${mid}, ${step}번만에`:`❌ ${target}을 찾을 수 없습니다.`;return}
+    step++;
+    mid=Math.floor((lo+hi)/2);
+    if(arr[mid]===target){found=true;document.getElementById('bsLog').textContent=`✅ arr[${mid}]=${arr[mid]} — 찾았습니다! (${step}번)`}
+    else if(arr[mid]<target){document.getElementById('bsLog').textContent=`arr[${mid}]=${arr[mid]} < ${target} → 오른쪽 절반 탐색 (단계 ${step})`;lo=mid+1}
+    else{document.getElementById('bsLog').textContent=`arr[${mid}]=${arr[mid]} > ${target} → 왼쪽 절반 탐색 (단계 ${step})`;hi=mid-1}
+    renderBS();
+  };
+
+  window.bsAuto=function(){
+    let t=setInterval(()=>{window.bsStep();if(found||lo>hi)clearInterval(t)},600);
+  };
+
+  bsNew();
+}
+
+// ── Node 76: BFS ──
+function sim76(){
+  document.getElementById('simTag').textContent='너비 우선 탐색 (BFS)';
+  const ROWS=12,COLS=18;
+  let grid,visited,queue,interval,running=false;
+  let startR=1,startC=1,goalR=ROWS-2,goalC=COLS-2;
+  const WALL=1,EMPTY=0,VISITED=2,QUEUE_=3,PATH=4,START=5,GOAL=6;
+
+  sc.innerHTML=`<canvas id="bfsCanvas" style="border-radius:8px;max-width:100%;cursor:pointer"></canvas>
+    <div class="sim-controls" style="margin-top:6px">
+      <button class="sim-btn" onclick="bfsNew()">새 미로</button>
+      <button class="sim-btn primary" onclick="bfsRun()" id="bfsBtn">BFS 시작</button>
+      <button class="sim-btn" onclick="bfsStep()">한 단계</button>
+    </div>
+    <div class="sim-info" id="bfsLog" style="margin-top:6px"></div>`;
+
+  const canvas=document.getElementById('bfsCanvas');
+  const cs=Math.floor(Math.min(sc.offsetWidth-20,520)/COLS);
+  canvas.width=COLS*cs;canvas.height=ROWS*cs;
+  const ctx=canvas.getContext('2d');
+  let parent={};
+
+  window.bfsNew=function(){
+    clearInterval(interval);running=false;document.getElementById('bfsBtn').textContent='BFS 시작';
+    grid=Array.from({length:ROWS},(_,r)=>Array.from({length:COLS},(_,c)=>
+      (r===0||r===ROWS-1||c===0||c===COLS-1)?WALL:Math.random()<0.28?WALL:EMPTY));
+    grid[startR][startC]=EMPTY;grid[goalR][goalC]=EMPTY;
+    visited=Array.from({length:ROWS},()=>Array(COLS).fill(false));
+    queue=[[startR,startC]];parent={};
+    visited[startR][startC]=true;
+    document.getElementById('bfsLog').textContent='미로 생성 완료. BFS 시작을 눌러보세요.';
+    drawBFS();
+  };
+
+  function drawBFS(){
+    const COLORS={[WALL]:'#1a1a2e',[EMPTY]:'#111118',[VISITED]:color+'20',[QUEUE_]:color+'50',[PATH]:'#f97316',[START]:'#22c55e',[GOAL]:'#ef4444'};
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+      const cell=grid[r][c];
+      ctx.fillStyle=COLORS[cell]||'#111';
+      ctx.fillRect(c*cs,r*cs,cs,cs);
+      if(cell!==WALL){ctx.strokeStyle='#1e1e2e';ctx.lineWidth=0.5;ctx.strokeRect(c*cs,r*cs,cs,cs)}
+    }
+    ctx.fillStyle='#22c55e';ctx.beginPath();ctx.arc(startC*cs+cs/2,startR*cs+cs/2,cs*0.35,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ef4444';ctx.beginPath();ctx.arc(goalC*cs+cs/2,goalR*cs+cs/2,cs*0.35,0,Math.PI*2);ctx.fill();
+  }
+
+  window.bfsStep=function(){
+    if(!queue.length){document.getElementById('bfsLog').textContent='탐색 완료 — 경로 없음';return}
+    const [r,c]=queue.shift();
+    if(r===goalR&&c===goalC){
+      // Trace path
+      let cr=r,cc=c;
+      while(cr!==startR||cc!==startC){
+        grid[cr][cc]=PATH;const[pr,pc]=parent[`${cr},${cc}`];cr=pr;cc=pc;
+      }
+      drawBFS();document.getElementById('bfsLog').textContent='✅ 경로 발견!';
+      clearInterval(interval);running=false;document.getElementById('bfsBtn').textContent='BFS 시작';
+      return;
+    }
+    if(grid[r][c]!==START)grid[r][c]=VISITED;
+    [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{
+      const nr=r+dr,nc=c+dc;
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!visited[nr][nc]&&grid[nr][nc]!==WALL){
+        visited[nr][nc]=true;queue.push([nr,nc]);parent[`${nr},${nc}`]=[r,c];
+        if(grid[nr][nc]!==GOAL)grid[nr][nc]=QUEUE_;
+      }
+    });
+    drawBFS();
+    document.getElementById('bfsLog').textContent=`탐색 중... 큐 크기: ${queue.length}`;
+  };
+
+  window.bfsRun=function(){
+    if(running){clearInterval(interval);running=false;document.getElementById('bfsBtn').textContent='BFS 시작';return}
+    running=true;document.getElementById('bfsBtn').textContent='멈추기';
+    interval=setInterval(window.bfsStep,40);
+  };
+
+  bfsNew();
+}
+
+// ── Node 84: 미니맥스 (틱택토) ──
+function sim84(){
+  document.getElementById('simTag').textContent='미니맥스 — 틱택토 AI';
+  let board=Array(9).fill(null),humanTurn=true,gameOver=false;
+  sc.innerHTML=`
+    <div style="text-align:center;padding:8px">
+      <p class="sim-info" style="margin-bottom:10px">당신은 ❌, AI는 ⭕. AI는 미니맥스 알고리즘으로 최선의 수를 찾습니다.</p>
+      <div id="tttBoard" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:240px;margin:0 auto 12px"></div>
+      <div id="tttStatus" style="font-size:1rem;font-weight:700;color:var(--c);margin-bottom:10px">당신의 차례 ❌</div>
+      <button class="sim-btn" onclick="tttReset()">다시 시작</button>
+    </div>`;
+
+  function minimax(b,isMax){
+    const w=checkWin(b);
+    if(w==='O')return 1;if(w==='X')return -1;
+    if(!b.includes(null))return 0;
+    if(isMax){let best=-2;b.forEach((_,i)=>{if(b[i]===null){b[i]='O';best=Math.max(best,minimax(b,false));b[i]=null}});return best}
+    else{let best=2;b.forEach((_,i)=>{if(b[i]===null){b[i]='X';best=Math.min(best,minimax(b,true));b[i]=null}});return best}
+  }
+  function checkWin(b){
+    const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for(const[a,c,d]of lines)if(b[a]&&b[a]===b[c]&&b[a]===b[d])return b[a];
+    return null;
+  }
+  function aiMove(){
+    let best=-2,move=-1;
+    board.forEach((_,i)=>{if(board[i]===null){board[i]='O';const s=minimax(board,false);board[i]=null;if(s>best){best=s;move=i}}});
+    if(move>=0)board[move]='O';
+  }
+  function render(){
+    const div=document.getElementById('tttBoard');
+    div.innerHTML=board.map((v,i)=>`<div onclick="tttClick(${i})" style="height:72px;border-radius:10px;border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:pointer;transition:all .15s">${v==='X'?'❌':v==='O'?'⭕':''}</div>`).join('');
+  }
+  window.tttClick=function(i){
+    if(!humanTurn||board[i]||gameOver)return;
+    board[i]='X';
+    let w=checkWin(board);
+    if(w){document.getElementById('tttStatus').textContent='🎉 당신이 이겼어요!';gameOver=true;render();return}
+    if(!board.includes(null)){document.getElementById('tttStatus').textContent='🤝 무승부!';gameOver=true;render();return}
+    humanTurn=false;document.getElementById('tttStatus').textContent='AI 생각 중... ⭕';
+    render();
+    setTimeout(()=>{
+      aiMove();w=checkWin(board);
+      if(w){document.getElementById('tttStatus').textContent='🤖 AI 승리!';gameOver=true}
+      else if(!board.includes(null)){document.getElementById('tttStatus').textContent='🤝 무승부!';gameOver=true}
+      else{humanTurn=true;document.getElementById('tttStatus').textContent='당신의 차례 ❌'}
+      render();
+    },300);
+  };
+  window.tttReset=function(){board=Array(9).fill(null);humanTurn=true;gameOver=false;document.getElementById('tttStatus').textContent='당신의 차례 ❌';render()};
+  render();
+}
+
+// ── Node 103: PID 제어 ──
+function sim103(){
+  document.getElementById('simTag').textContent='PID 제어 시뮬레이터';
+  sc.innerHTML=`
+    <div style="padding:8px">
+      <p class="sim-info" style="margin-bottom:8px">온도 컨트롤러: 목표 온도에 PID로 수렴시킵니다.</p>
+      <canvas id="pidCanvas" style="border-radius:8px;max-width:100%"></canvas>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
+        <label><div class="sim-label">P (비례) <span id="pv">1.0</span></div><input type="range" id="pidP" min="0" max="30" value="10" step="1"></label>
+        <label><div class="sim-label">I (적분) <span id="iv">0.1</span></div><input type="range" id="pidI" min="0" max="20" value="3" step="1"></label>
+        <label><div class="sim-label">D (미분) <span id="dv">0.5</span></div><input type="range" id="pidD" min="0" max="30" value="5" step="1"></label>
+      </div>
+      <div class="sim-controls" style="margin-top:8px">
+        <button class="sim-btn" onclick="pidReset()">초기화</button>
+        <span class="sim-info" id="pidInfo"></span>
+      </div>
+    </div>`;
+
+  const canvas=document.getElementById('pidCanvas');
+  canvas.width=Math.min(sc.offsetWidth-20,500);canvas.height=180;
+  const ctx=canvas.getContext('2d');
+  const TARGET=60,N=canvas.width;
+  let history=[],integral=0,prevErr=0,T=20;
+
+  function getParams(){
+    const p=document.getElementById('pidP').value/10;
+    const i=document.getElementById('pidI').value/100;
+    const d=document.getElementById('pidD').value/10;
+    document.getElementById('pv').textContent=p.toFixed(1);
+    document.getElementById('iv').textContent=i.toFixed(2);
+    document.getElementById('dv').textContent=d.toFixed(1);
+    return{p,i,d};
+  }
+
+  window.pidReset=function(){history=[];integral=0;prevErr=0;T=20};
+
+  function step(){
+    const{p,i,d}=getParams();
+    const err=TARGET-T;
+    integral+=err*0.02;
+    const der=(err-prevErr)/0.02;
+    const u=p*err+i*integral+d*der;
+    T+=u*0.02-0.1*(T-20)*0.02; // heat + cooling
+    T=Math.max(0,Math.min(100,T));
+    prevErr=err;
+    history.push(T);
+    if(history.length>N)history.shift();
+    // Draw
+    const W=canvas.width,H=canvas.height;
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#111118';ctx.fillRect(0,0,W,H);
+    // Target line
+    const ty=H-(TARGET/100)*H;
+    ctx.strokeStyle='#f97316';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
+    ctx.beginPath();ctx.moveTo(0,ty);ctx.lineTo(W,ty);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#f97316';ctx.font='10px monospace';ctx.textAlign='left';ctx.fillText(`목표: ${TARGET}°`,4,ty-4);
+    // Curve
+    ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();
+    history.forEach((v,j)=>{const x=j*(W/N),y=H-(v/100)*H;j===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+    ctx.stroke();
+    // Current
+    ctx.fillStyle=color;ctx.font='bold 12px monospace';ctx.textAlign='right';ctx.fillText(`현재: ${T.toFixed(1)}°`,W-4,16);
+    document.getElementById('pidInfo').textContent=`오차: ${(TARGET-T).toFixed(1)}°`;
+  }
+
+  setInterval(step,50);
+}
+
+// ── Node 127: 전문가 시스템 ──
+function sim127(){
+  document.getElementById('simTag').textContent='전문가 시스템 — 규칙 추론';
+  const rules=[
+    {cond:s=>s.fever&&s.cough&&s.sore_throat, diag:'독감 의심', advice:'병원 방문 권장, 휴식'},
+    {cond:s=>s.fever&&!s.cough&&s.headache, diag:'일반 발열', advice:'충분한 수면과 수분 섭취'},
+    {cond:s=>!s.fever&&s.cough&&s.runny_nose, diag:'감기 초기', advice:'따뜻한 물, 비타민C'},
+    {cond:s=>s.fatigue&&s.headache&&!s.fever, diag:'과로/스트레스', advice:'충분한 휴식'},
+    {cond:s=>!s.fever&&!s.cough&&!s.headache, diag:'현재 이상 없음', advice:'건강 유지'},
+  ];
+  const symptoms=['fever','cough','sore_throat','headache','runny_nose','fatigue'];
+  const symLabels={'fever':'발열','cough':'기침','sore_throat':'인후통','headache':'두통','runny_nose':'콧물','fatigue':'피로감'};
+  let state={};symptoms.forEach(s=>state[s]=false);
+
+  sc.innerHTML=`
+    <div style="padding:8px">
+      <p class="sim-info" style="margin-bottom:10px">증상을 체크하면 IF-THEN 규칙으로 진단을 추론합니다.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px" id="symChecks"></div>
+      <div style="padding:14px;border-radius:10px;border:1px solid var(--c)30;background:var(--c)08" id="diagResult">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">추론 결과</div>
+        <div style="font-size:1rem;font-weight:700" id="diagName">—</div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-top:4px" id="diagAdvice">증상을 선택해주세요</div>
+      </div>
+      <div style="margin-top:10px;font-size:0.78rem;color:var(--muted)" id="ruleTrace"></div>
+    </div>`;
+
+  function renderSym(){
+    document.getElementById('symChecks').innerHTML=symptoms.map(s=>`
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px;border-radius:8px;border:1px solid ${state[s]?color+'50':'var(--border)'};background:${state[s]?color+'10':'transparent'};transition:all .2s">
+        <input type="checkbox" ${state[s]?'checked':''} onchange="toggleSym('${s}')" style="accent-color:var(--c)">
+        <span>${symLabels[s]}</span>
+      </label>`).join('');
+    infer();
+  }
+  window.toggleSym=function(s){state[s]=!state[s];renderSym()};
+  function infer(){
+    const matched=rules.find(r=>r.cond(state));
+    document.getElementById('diagName').textContent=matched?matched.diag:'판단 불가';
+    document.getElementById('diagAdvice').textContent=matched?matched.advice:'—';
+    const activeRules=rules.map((r,i)=>`규칙 ${i+1}: ${r.cond(state)?'✅':'⬜'}`).join(' | ');
+    document.getElementById('ruleTrace').textContent='규칙 적용: '+activeRules;
+  }
+  renderSym();
+}
+
+// ── Node 140: 선형 회귀 ──
+function sim140(){
+  document.getElementById('simTag').textContent='선형 회귀 — 점을 클릭해보세요';
+  let pts=[];
+  sc.innerHTML=`<canvas id="lrCanvas" style="cursor:crosshair;border-radius:8px;max-width:100%"></canvas>
+    <div class="sim-controls" style="margin-top:8px">
+      <button class="sim-btn" onclick="lrClear()">지우기</button>
+      <span class="sim-info" id="lrEq" style="font-family:monospace"></span>
+    </div>
+    <div class="sim-info" style="margin-top:4px">캔버스를 클릭해 데이터 포인트를 추가하세요.</div>`;
+  const canvas=document.getElementById('lrCanvas');
+  canvas.width=Math.min(sc.offsetWidth-20,500);canvas.height=260;
+  const ctx=canvas.getContext('2d');
+
+  function drawLR(){
+    const W=canvas.width,H=canvas.height;
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#111118';ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='#1e1e2e';ctx.lineWidth=1;
+    for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+    for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+    pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill()});
+    if(pts.length>=2){
+      const n=pts.length;
+      const mx=pts.reduce((s,p)=>s+p.x,0)/n,my=pts.reduce((s,p)=>s+p.y,0)/n;
+      const num=pts.reduce((s,p)=>s+(p.x-mx)*(p.y-my),0);
+      const den=pts.reduce((s,p)=>s+(p.x-mx)**2,0);
+      if(den!==0){
+        const m=num/den,b=my-m*mx;
+        ctx.strokeStyle='#f97316';ctx.lineWidth=2;ctx.beginPath();
+        ctx.moveTo(0,b);ctx.lineTo(W,m*W+b);ctx.stroke();
+        const mx2=mx/W*10-5,my2=-(my/H*10-5);
+        const slope=(-(m*W))/H;
+        document.getElementById('lrEq').textContent=`y = ${m.toFixed(3)}x + ${b.toFixed(1)} | 기울기: ${slope.toFixed(3)}`;
+      }
+    }
+  }
+  canvas.onclick=function(e){const r=canvas.getBoundingClientRect();pts.push({x:(e.clientX-r.left)*(canvas.width/r.width),y:(e.clientY-r.top)*(canvas.height/r.height)});drawLR()};
+  window.lrClear=function(){pts=[];document.getElementById('lrEq').textContent='';drawLR()};
+  drawLR();
+}
+
+// ── Node 150: k-평균 군집 ──
+function sim150(){
+  document.getElementById('simTag').textContent='K-평균 군집 시각화';
+  const K=3;
+  let pts=[],centroids=[],assignments=[];
+
+  sc.innerHTML=`<canvas id="kmCanvas" style="border-radius:8px;max-width:100%;cursor:crosshair"></canvas>
+    <div class="sim-controls" style="margin-top:6px">
+      <button class="sim-btn" onclick="kmRandom()">랜덤 데이터</button>
+      <button class="sim-btn primary" onclick="kmStep()">한 단계 EM</button>
+      <button class="sim-btn" onclick="kmAuto()">수렴까지</button>
+      <button class="sim-btn" onclick="kmClear()">초기화</button>
+    </div>
+    <div class="sim-info" id="kmLog" style="margin-top:6px"></div>`;
+
+  const canvas=document.getElementById('kmCanvas');
+  canvas.width=Math.min(sc.offsetWidth-20,500);canvas.height=260;
+  const ctx=canvas.getContext('2d');
+  const COLORS=['#ef4444','#22c55e','#3b82f6'];
+
+  window.kmRandom=function(){
+    pts=[];assignments=[];
+    for(let k=0;k<K;k++)for(let i=0;i<20;i++){
+      const cx=80+k*120+Math.random()*80,cy=40+Math.random()*180;
+      pts.push({x:cx,y:cy});
+    }
+    centroids=Array.from({length:K},()=>({x:50+Math.random()*400,y:20+Math.random()*220}));
+    assignments=Array(pts.length).fill(0);
+    drawKM();document.getElementById('kmLog').textContent='데이터 생성 완료. EM 단계를 진행해보세요.';
+  };
+
+  function assign(){
+    let changed=false;
+    pts.forEach((p,i)=>{
+      const dists=centroids.map(c=>Math.hypot(p.x-c.x,p.y-c.y));
+      const newA=dists.indexOf(Math.min(...dists));
+      if(newA!==assignments[i]){assignments[i]=newA;changed=true}
+    });
+    return changed;
+  }
+  function update(){
+    centroids=centroids.map((_,k)=>{
+      const cluster=pts.filter((_,i)=>assignments[i]===k);
+      if(!cluster.length)return centroids[k];
+      return{x:cluster.reduce((s,p)=>s+p.x,0)/cluster.length,y:cluster.reduce((s,p)=>s+p.y,0)/cluster.length};
+    });
+  }
+  function drawKM(){
+    const W=canvas.width,H=canvas.height;
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#111118';ctx.fillRect(0,0,W,H);
+    pts.forEach((p,i)=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);
+      ctx.fillStyle=COLORS[assignments[i]||0]+'90';ctx.fill();
+    });
+    centroids.forEach((c,k)=>{
+      ctx.beginPath();ctx.arc(c.x,c.y,10,0,Math.PI*2);
+      ctx.fillStyle=COLORS[k];ctx.fill();
+      ctx.strokeStyle='white';ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle='white';ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('C'+(k+1),c.x,c.y);
+    });
+  }
+  window.kmStep=function(){
+    const changed=assign();update();drawKM();
+    document.getElementById('kmLog').textContent=changed?'클러스터 재배정 완료. 계속 실행하세요.':'✅ 수렴 완료!';
+  };
+  window.kmAuto=function(){let it=0;const t=setInterval(()=>{const c=assign();update();drawKM();it++;if(!c||it>30){clearInterval(t);document.getElementById('kmLog').textContent=`✅ ${it}번만에 수렴!`}},150)};
+  window.kmClear=function(){pts=[];centroids=[];assignments=[];ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#111118';ctx.fillRect(0,0,canvas.width,canvas.height)};
+
+  kmRandom();
+}
+
+// ── Node 159: 역전파 (신경망 훈련) ──
+function sim159(){
+  document.getElementById('simTag').textContent='신경망 학습 — 역전파';
+  // XOR problem with 2-2-1 network
+  let W1=[[Math.random()-0.5,Math.random()-0.5],[Math.random()-0.5,Math.random()-0.5]];
+  let W2=[Math.random()-0.5,Math.random()-0.5];
+  let B1=[0,0],B2=0;
+  const lr=0.1;
+  const data=[[0,0,0],[0,1,1],[1,0,1],[1,1,0]];
+  let losses=[];let epoch=0;
+
+  sc.innerHTML=`
+    <div style="padding:6px">
+      <canvas id="nnCanvas" style="border-radius:8px;max-width:100%"></canvas>
+      <canvas id="lossCanvas" style="border-radius:8px;max-width:100%;margin-top:8px"></canvas>
+      <div class="sim-controls" style="margin-top:6px">
+        <button class="sim-btn" onclick="nnTrain(1)">1 에폭</button>
+        <button class="sim-btn" onclick="nnTrain(10)">10 에폭</button>
+        <button class="sim-btn primary" onclick="nnAuto()" id="nnAutoBtn">자동 학습</button>
+        <button class="sim-btn" onclick="nnReset()">초기화</button>
+      </div>
+      <div class="sim-info" id="nnLog" style="margin-top:6px"></div>
+    </div>`;
+
+  const nnC=document.getElementById('nnCanvas');nnC.width=Math.min(sc.offsetWidth-20,500);nnC.height=180;
+  const lC=document.getElementById('lossCanvas');lC.width=nnC.width;lC.height=100;
+  const ctx=nnC.getContext('2d'),lctx=lC.getContext('2d');
+
+  function sigmoid(x){return 1/(1+Math.exp(-x))}
+  function forward(x1,x2){
+    const h1=sigmoid(W1[0][0]*x1+W1[0][1]*x2+B1[0]);
+    const h2=sigmoid(W1[1][0]*x1+W1[1][1]*x2+B1[1]);
+    const out=sigmoid(W2[0]*h1+W2[1]*h2+B2);
+    return{h1,h2,out};
+  }
+  function trainEpoch(){
+    let totalLoss=0;
+    data.forEach(([x1,x2,y])=>{
+      const{h1,h2,out}=forward(x1,x2);
+      totalLoss+=(y-out)**2;
+      const dOut=(out-y)*out*(1-out);
+      W2[0]-=lr*dOut*h1;W2[1]-=lr*dOut*h2;B2-=lr*dOut;
+      const dH1=dOut*W2[0]*h1*(1-h1);
+      const dH2=dOut*W2[1]*h2*(1-h2);
+      W1[0][0]-=lr*dH1*x1;W1[0][1]-=lr*dH1*x2;B1[0]-=lr*dH1;
+      W1[1][0]-=lr*dH2*x1;W1[1][1]-=lr*dH2*x2;B1[1]-=lr*dH2;
+    });
+    return totalLoss/4;
+  }
+
+  function drawNN(){
+    const W=nnC.width,H=nnC.height;
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#111118';ctx.fillRect(0,0,W,H);
+    const layers=[[W*0.1,H/3],[W*0.1,H*2/3],[W*0.45,H/3],[W*0.45,H*2/3],[W*0.85,H/2]];
+    const conns=[[0,2],[0,3],[1,2],[1,3],[2,4],[3,4]];
+    conns.forEach(([a,b])=>{
+      ctx.beginPath();ctx.moveTo(layers[a][0],layers[a][1]);ctx.lineTo(layers[b][0],layers[b][1]);
+      ctx.strokeStyle=color+'40';ctx.lineWidth=1.5;ctx.stroke();
+    });
+    layers.forEach(([x,y],i)=>{
+      ctx.beginPath();ctx.arc(x,y,18,0,Math.PI*2);
+      ctx.fillStyle=color+'20';ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();
+    });
+    // Labels
+    const preds=data.map(([x1,x2,y])=>({x1,x2,y,p:forward(x1,x2).out}));
+    ctx.font='10px monospace';ctx.fillStyle='#94a3b8';ctx.textAlign='center';
+    preds.forEach((d,i)=>{
+      const ok=Math.abs(d.y-d.p)<0.5;
+      ctx.fillStyle=ok?'#22c55e':'#ef4444';
+      ctx.fillText(`${d.x1}⊕${d.x2}=${d.y}(${d.p.toFixed(2)})`,W*0.5,H-20+i*0);
+    });
+    const txt=preds.map(d=>`[${d.x1},${d.x2}]→${d.p.toFixed(2)}`).join(' ');
+    ctx.font='10px monospace';ctx.fillStyle='#94a3b8';ctx.textAlign='left';ctx.fillText(txt,8,H-8);
+  }
+
+  function drawLoss(){
+    const W=lC.width,H=lC.height;
+    lctx.clearRect(0,0,W,H);lctx.fillStyle='#111118';lctx.fillRect(0,0,W,H);
+    if(losses.length<2)return;
+    const max=Math.max(...losses);
+    lctx.strokeStyle=color;lctx.lineWidth=2;lctx.beginPath();
+    losses.forEach((l,i)=>{const x=i/(losses.length-1)*W,y=H-(l/max)*(H-10)-5;i===0?lctx.moveTo(x,y):lctx.lineTo(x,y)});
+    lctx.stroke();
+    lctx.fillStyle='#64748b';lctx.font='10px monospace';lctx.textAlign='left';lctx.fillText(`Loss: ${losses[losses.length-1].toFixed(4)}  에폭: ${epoch}`,4,14);
+  }
+
+  window.nnTrain=function(n){for(let i=0;i<n;i++){const l=trainEpoch();losses.push(l);epoch++}if(losses.length>500)losses=losses.slice(-500);drawNN();drawLoss();document.getElementById('nnLog').textContent=`에폭 ${epoch}: 손실 ${losses[losses.length-1].toFixed(4)}`};
+
+  let autoInterval=null;
+  window.nnAuto=function(){
+    if(autoInterval){clearInterval(autoInterval);autoInterval=null;document.getElementById('nnAutoBtn').textContent='자동 학습';return}
+    document.getElementById('nnAutoBtn').textContent='멈추기';
+    autoInterval=setInterval(()=>{window.nnTrain(5);if(losses[losses.length-1]<0.01){clearInterval(autoInterval);autoInterval=null;document.getElementById('nnAutoBtn').textContent='자동 학습'}},50);
+  };
+  window.nnReset=function(){
+    clearInterval(autoInterval);autoInterval=null;
+    W1=[[Math.random()-0.5,Math.random()-0.5],[Math.random()-0.5,Math.random()-0.5]];
+    W2=[Math.random()-0.5,Math.random()-0.5];B1=[0,0];B2=0;losses=[];epoch=0;
+    document.getElementById('nnAutoBtn').textContent='자동 학습';drawNN();drawLoss();
+  };
+  drawNN();drawLoss();
+}
+
+// ── Node 183: 어텐션 ──
+function sim183(){
+  document.getElementById('simTag').textContent='주의집중(Attention) 시각화';
+  const words=['나는','오늘','공원에서','강아지를','봤다'];
+  let queryIdx=0;
+
+  sc.innerHTML=`
+    <div style="padding:8px">
+      <p class="sim-info" style="margin-bottom:10px">쿼리 단어를 선택하면 다른 단어들에 대한 어텐션 가중치를 시뮬레이션합니다.</p>
+      <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:16px" id="wordBtns"></div>
+      <canvas id="attnCanvas" style="border-radius:8px;max-width:100%"></canvas>
+      <div class="sim-info" id="attnInfo" style="margin-top:8px"></div>
+    </div>`;
+
+  const canvas=document.getElementById('attnCanvas');
+  canvas.width=Math.min(sc.offsetWidth-20,500);canvas.height=200;
+  const ctx=canvas.getContext('2d');
+
+  // Pre-computed "semantic" attention patterns
+  const patterns=[
+    [0.6,0.1,0.1,0.1,0.1],
+    [0.05,0.5,0.2,0.05,0.2],
+    [0.1,0.15,0.5,0.1,0.15],
+    [0.05,0.05,0.1,0.7,0.1],
+    [0.1,0.05,0.2,0.3,0.35],
+  ];
+
+  function drawAttn(){
+    const W=canvas.width,H=canvas.height;
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#111118';ctx.fillRect(0,0,W,H);
+    const attn=patterns[queryIdx];
+    const bw=W/words.length;
+    words.forEach((w,i)=>{
+      const a=attn[i];
+      const barH=(H-60)*a;
+      const x=i*bw+bw*0.1,bww=bw*0.8;
+      ctx.fillStyle=`${color}${Math.round(a*255).toString(16).padStart(2,'0')}`;
+      ctx.beginPath();ctx.roundRect(x,H-40-barH,bww,barH,4);ctx.fill();
+      ctx.strokeStyle=i===queryIdx?'#f97316':color+'60';ctx.lineWidth=i===queryIdx?2:1;
+      ctx.strokeRect(x,H-40-barH,bww,barH);
+      ctx.fillStyle=i===queryIdx?'#f97316':color;ctx.font=`bold 12px sans-serif`;ctx.textAlign='center';
+      ctx.fillText(w,x+bww/2,H-22);
+      ctx.fillStyle='#94a3b8';ctx.font='10px monospace';ctx.fillText(a.toFixed(2),x+bww/2,H-40-barH-4);
+    });
+    document.getElementById('attnInfo').textContent=`"${words[queryIdx]}"이 다른 단어들에 주목하는 정도 (가장 집중: "${words[attn.indexOf(Math.max(...attn))]}")`;
+  }
+
+  function renderBtns(){
+    document.getElementById('wordBtns').innerHTML=words.map((w,i)=>`
+      <button onclick="attnQuery(${i})" style="padding:6px 14px;border-radius:8px;border:2px solid ${i===queryIdx?'#f97316':color+'40'};background:${i===queryIdx?'#f9731620':color+'10'};color:${i===queryIdx?'#f97316':color};font-size:0.85rem;cursor:pointer;font-weight:${i===queryIdx?700:400}">
+        ${w}
+      </button>`).join('');
+  }
+  window.attnQuery=function(i){queryIdx=i;renderBtns();drawAttn()};
+  renderBtns();drawAttn();
+}
+
+// ── Node 210: Q-러닝 ──
+function sim210(){
+  document.getElementById('simTag').textContent='Q-러닝 그리드 월드';
+  const ROWS=5,COLS=7;
+  const GOAL_R=0,GOAL_C=6;
+  const TRAP_R=2,TRAP_C=3;
+  let Q=Array.from({length:ROWS},()=>Array.from({length:COLS},()=>Array(4).fill(0)));
+  let agentR=4,agentC=0,episode=0,totalReward=0;
+  const ACTIONS=[[0,1],[0,-1],[1,0],[-1,0]]; // R,L,D,U
+  const ACT_LABELS=['→','←','↓','↑'];
+  const lr=0.3,gamma=0.9,eps=0.2;
+  let running=false,interval=null;
+
+  sc.innerHTML=`
+    <div style="padding:4px">
+      <p class="sim-info" style="margin-bottom:6px">에이전트가 보상을 통해 최적 경로를 학습합니다. 🟢=목표(+10), 🔴=함정(-5)</p>
+      <canvas id="qlCanvas" style="border-radius:8px;max-width:100%;display:block;margin:0 auto"></canvas>
+      <div class="sim-controls" style="margin-top:6px;justify-content:center">
+        <button class="sim-btn" onclick="qlStep()">1 스텝</button>
+        <button class="sim-btn primary" onclick="qlRun()" id="qlBtn">자동 학습</button>
+        <button class="sim-btn" onclick="qlReset()">초기화</button>
+        <span class="sim-info" id="qlLog" style="font-size:0.75rem"></span>
+      </div>
+    </div>`;
+
+  const canvas=document.getElementById('qlCanvas');
+  const cs=Math.floor(Math.min(sc.offsetWidth-30,450)/COLS);
+  canvas.width=COLS*cs;canvas.height=ROWS*cs;
+  const ctx=canvas.getContext('2d');
+
+  function bestAction(r,c){let bi=0,bv=-Infinity;Q[r][c].forEach((v,i)=>{if(v>bv){bv=v;bi=i}});return bi}
+
+  function drawQL(){
+    const W=canvas.width,H=canvas.height;
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#111118';ctx.fillRect(0,0,W,H);
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+      const x=c*cs,y=r*cs;
+      const maxQ=Math.max(...Q[r][c]);
+      const bg=maxQ>2?color+'30':maxQ<-1?'#ef444415':'#ffffff05';
+      ctx.fillStyle=bg;ctx.fillRect(x+1,y+1,cs-2,cs-2);
+      ctx.strokeStyle='#1e1e2e';ctx.lineWidth=1;ctx.strokeRect(x,y,cs,cs);
+      // Best action arrow
+      if(!(r===GOAL_R&&c===GOAL_C)&&!(r===TRAP_R&&c===TRAP_C)){
+        const ba=bestAction(r,c);
+        ctx.fillStyle=color+'80';ctx.font=`bold ${Math.round(cs*0.4)}px monospace`;
+        ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText(ACT_LABELS[ba],x+cs/2,y+cs/2);
+      }
+    }
+    // Goal
+    ctx.fillStyle='#22c55e';ctx.font=`${Math.round(cs*0.55)}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🏆',GOAL_C*cs+cs/2,GOAL_R*cs+cs/2);
+    // Trap
+    ctx.fillText('💣',TRAP_C*cs+cs/2,TRAP_R*cs+cs/2);
+    // Agent
+    ctx.fillText('🤖',agentC*cs+cs/2,agentR*cs+cs/2);
+    document.getElementById('qlLog').textContent=`에피소드: ${episode} | 위치: (${agentR},${agentC})`;
+  }
+
+  function step(){
+    const r=agentR,c=agentC;
+    let a;
+    if(Math.random()<eps)a=Math.floor(Math.random()*4);else a=bestAction(r,c);
+    const[dr,dc]=ACTIONS[a];
+    const nr=Math.max(0,Math.min(ROWS-1,r+dr)),nc=Math.max(0,Math.min(COLS-1,c+dc));
+    let reward=-0.1;
+    if(nr===GOAL_R&&nc===GOAL_C)reward=10;
+    if(nr===TRAP_R&&nc===TRAP_C)reward=-5;
+    const maxNextQ=Math.max(...Q[nr][nc]);
+    Q[r][c][a]+=lr*(reward+gamma*maxNextQ-Q[r][c][a]);
+    agentR=nr;agentC=nc;totalReward+=reward;
+    if((agentR===GOAL_R&&agentC===GOAL_C)||(agentR===TRAP_R&&agentC===TRAP_C)){agentR=4;agentC=0;episode++}
+    drawQL();
+  }
+
+  window.qlStep=step;
+  window.qlRun=function(){
+    if(running){clearInterval(interval);running=false;document.getElementById('qlBtn').textContent='자동 학습';return}
+    running=true;document.getElementById('qlBtn').textContent='멈추기';
+    interval=setInterval(step,50);
+  };
+  window.qlReset=function(){
+    clearInterval(interval);running=false;
+    Q=Array.from({length:ROWS},()=>Array.from({length:COLS},()=>Array(4).fill(0)));
+    agentR=4;agentC=0;episode=0;totalReward=0;
+    document.getElementById('qlBtn').textContent='자동 학습';drawQL();
+  };
+  drawQL();
+}
+
+// ── Node 193: GAN ──
+function sim193(){
+  document.getElementById('simTag').textContent='GAN — 생성 vs 판별 게임';
+  let genScore=0,disScore=0,round=0;
+  sc.innerHTML=`
+    <div style="padding:8px;text-align:center">
+      <p class="sim-info" style="margin-bottom:10px">생성자(G)가 만든 이미지를 판별자(D)가 진짜/가짜로 구분합니다. 두 네트워크가 경쟁하며 함께 성장합니다.</p>
+      <canvas id="ganCanvas" style="border-radius:10px;max-width:100%;display:block;margin:0 auto"></canvas>
+      <div style="display:flex;justify-content:space-around;margin:10px 0" id="ganScores"></div>
+      <div class="sim-controls" style="justify-content:center">
+        <button class="sim-btn primary" onclick="ganRound()">한 라운드</button>
+        <button class="sim-btn" onclick="ganAuto()" id="ganAutoBtn">자동</button>
+        <button class="sim-btn" onclick="ganReset()">초기화</button>
+      </div>
+      <div class="sim-info" id="ganLog" style="margin-top:6px"></div>
+    </div>`;
+
+  const canvas=document.getElementById('ganCanvas');
+  canvas.width=Math.min(sc.offsetWidth-20,480);canvas.height=160;
+  const ctx=canvas.getContext('2d');
+
+  function drawGAN(quality,discConf){
+    const W=canvas.width,H=canvas.height;
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#111118';ctx.fillRect(0,0,W,H);
+    // Real samples on left
+    ctx.fillStyle='#22c55e30';ctx.fillRect(10,10,W/2-20,H-20);
+    ctx.strokeStyle='#22c55e';ctx.lineWidth=1;ctx.strokeRect(10,10,W/2-20,H-20);
+    ctx.fillStyle='#22c55e';ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('실제 데이터',W/4,22);
+    for(let i=0;i<8;i++){
+      const x=20+Math.random()*(W/2-40),y=30+Math.random()*(H-50);
+      ctx.beginPath();ctx.arc(x,y,4+Math.random()*4,0,Math.PI*2);
+      ctx.fillStyle='#22c55e80';ctx.fill();
+    }
+    // Generated on right
+    const alpha=Math.min(quality/100,0.9);
+    ctx.fillStyle=color+'20';ctx.fillRect(W/2+10,10,W/2-20,H-20);
+    ctx.strokeStyle=color;ctx.lineWidth=1;ctx.strokeRect(W/2+10,10,W/2-20,H-20);
+    ctx.fillStyle=color;ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('생성 데이터',W*3/4,22);
+    for(let i=0;i<8;i++){
+      const x=W/2+20+Math.random()*(W/2-40),y=30+Math.random()*(H-50);
+      const noise=1-quality/100;
+      ctx.beginPath();ctx.arc(x+noise*20*(Math.random()-0.5),y+noise*20*(Math.random()-0.5),4+Math.random()*4,0,Math.PI*2);
+      ctx.fillStyle=`${color}${Math.round(alpha*255).toString(16).padStart(2,'0')}`;ctx.fill();
+    }
+    // Discriminator arrow
+    ctx.strokeStyle='#f97316';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(W/2-10,H/2);ctx.lineTo(W/2+10,H/2);
+    ctx.moveTo(W/2+5,H/2-5);ctx.lineTo(W/2+10,H/2);ctx.lineTo(W/2+5,H/2+5);ctx.stroke();
+    ctx.fillStyle='#f97316';ctx.font='9px monospace';ctx.fillText('D',W/2,H/2-8);
+  }
+
+  let quality=10;
+  window.ganRound=function(){
+    round++;
+    quality=Math.min(95,quality+(round<20?5:1));
+    genScore+=quality>50?1:0;
+    disScore+=quality<70?1:0;
+    drawGAN(quality,100-quality);
+    document.getElementById('ganScores').innerHTML=`
+      <div style="text-align:center"><div style="font-size:0.7rem;color:var(--muted)">생성자 G</div><div style="font-size:1.4rem;font-weight:800;color:${color}">${genScore}</div></div>
+      <div style="text-align:center"><div style="font-size:0.7rem;color:var(--muted)">라운드</div><div style="font-size:1.4rem;font-weight:800">${round}</div></div>
+      <div style="text-align:center"><div style="font-size:0.7rem;color:var(--muted)">판별자 D</div><div style="font-size:1.4rem;font-weight:800;color:#22c55e">${disScore}</div></div>`;
+    document.getElementById('ganLog').textContent=`생성 품질: ${quality}% | ${quality>80?'생성자가 판별자를 속이기 시작!':'판별자가 가짜를 잘 잡아냄'}`;
+  };
+  let ganInt=null;
+  window.ganAuto=function(){
+    if(ganInt){clearInterval(ganInt);ganInt=null;document.getElementById('ganAutoBtn').textContent='자동';return}
+    document.getElementById('ganAutoBtn').textContent='멈추기';
+    ganInt=setInterval(()=>{window.ganRound();if(quality>=95){clearInterval(ganInt);ganInt=null;document.getElementById('ganAutoBtn').textContent='자동'}},300);
+  };
+  window.ganReset=function(){clearInterval(ganInt);ganInt=null;quality=10;round=0;genScore=0;disScore=0;document.getElementById('ganAutoBtn').textContent='자동';ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#111118';ctx.fillRect(0,0,canvas.width,canvas.height);document.getElementById('ganScores').innerHTML='';document.getElementById('ganLog').textContent=''};
+  window.ganRound();
+}
+
+// ── Node 175: n-그램 언어모델 ──
+function sim175(){
+  document.getElementById('simTag').textContent='n-그램 언어 모델';
+  const corpus='나는 오늘 밥을 먹었다 나는 어제 물을 마셨다 나는 학교에 갔다 오늘 날씨가 좋다 오늘 밥이 맛있다'.split(' ');
+  sc.innerHTML=`
+    <div style="padding:8px">
+      <p class="sim-info" style="margin-bottom:8px">이전 단어를 보고 다음 단어를 확률적으로 예측합니다.</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;font-family:monospace;font-size:0.85rem;line-height:1.8" id="ngSentence"></div>
+      <div id="ngCandidates" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
+      <div class="sim-controls">
+        <button class="sim-btn" onclick="ngReset()">초기화</button>
+        <button class="sim-btn" onclick="ngAuto()">자동 완성</button>
+      </div>
+      <div class="sim-info" id="ngLog" style="margin-top:6px"></div>
+    </div>`;
+
+  let generated=['나는'];
+  function buildBigram(){
+    const map={};
+    for(let i=0;i<corpus.length-1;i++){
+      const w=corpus[i],n=corpus[i+1];
+      if(!map[w])map[w]={};
+      map[w][n]=(map[w][n]||0)+1;
+    }
+    return map;
+  }
+  const bigram=buildBigram();
+
+  function renderNG(){
+    document.getElementById('ngSentence').textContent=generated.join(' ')+'▌';
+    const last=generated[generated.length-1];
+    const nexts=bigram[last]||{};
+    const total=Object.values(nexts).reduce((s,v)=>s+v,0)||1;
+    const sorted=Object.entries(nexts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    document.getElementById('ngCandidates').innerHTML=sorted.map(([w,c])=>`
+      <button onclick="ngPick('${w}')" style="padding:6px 12px;border-radius:8px;border:1px solid ${color}40;background:${color}10;color:${color};font-size:0.82rem;cursor:pointer">
+        ${w} <span style="opacity:0.6">(${((c/total)*100).toFixed(0)}%)</span>
+      </button>`).join('')||'<span style="color:var(--muted)">다음 단어 예측 불가 (문장 끝)</span>';
+    document.getElementById('ngLog').textContent=`"${last}" 다음 단어 후보 — 코퍼스 기반 bigram`;
+  }
+  window.ngPick=function(w){generated.push(w);renderNG()};
+  window.ngReset=function(){generated=['나는'];renderNG()};
+  window.ngAuto=function(){
+    const last=generated[generated.length-1];
+    const nexts=bigram[last];
+    if(!nexts){document.getElementById('ngLog').textContent='문장 종료';return}
+    const total=Object.values(nexts).reduce((s,v)=>s+v,0);
+    let rand=Math.random()*total;
+    for(const[w,c]of Object.entries(nexts)){rand-=c;if(rand<=0){window.ngPick(w);return}}
+  };
+  renderNG();
+}
+
+// ─── SIMULATION DISPATCH ────────────────────────────────────────────────────
+const simMap={
+  1:sim1,3:sim3,8:sim8,9:sim9,11:sim11,13:sim13,18:sim18,
+  36:sim36,39:sim39,68:sim68,73:sim73,74:sim74,76:sim76,
+  84:sim84,103:sim103,127:sim127,140:sim140,150:sim150,
+  159:sim159,175:sim175,183:sim183,193:sim193,210:sim210
+};
+
+if(simMap[nodeId]){
+  simMap[nodeId]();
+}else{
+  defaultFlowSim();
+}
+</script>
+</body>
+</html>

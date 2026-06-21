@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>카테고리 — AI 기술 계보</title>
+<style>
+  :root { --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e; --text:#e2e8f0; --muted:#64748b; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+
+  nav { display:flex; align-items:center; gap:16px; padding:16px 24px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .nav-back { color:var(--muted); text-decoration:none; font-size:0.85rem; display:flex; align-items:center; gap:6px; transition:color 0.2s; }
+  .nav-back:hover { color:var(--text); }
+  .nav-title { font-weight:700; font-size:0.95rem; }
+  .nav-breadcrumb { display:flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--muted); margin-left:auto; }
+
+  .cat-header {
+    padding:48px 24px 32px; max-width:1200px; margin:0 auto;
+  }
+  .cat-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 14px; border-radius:999px; margin-bottom:20px;
+    font-size:0.8rem; font-weight:700; letter-spacing:0.05em;
+  }
+  .cat-header h1 { font-size:clamp(1.6rem,4vw,2.4rem); font-weight:800; margin-bottom:10px; }
+  .cat-header p { color:var(--muted); line-height:1.7; max-width:700px; }
+
+  /* Timeline mini */
+  .mini-timeline {
+    display:flex; gap:6px; padding:0 24px; max-width:1200px; margin:0 auto 32px;
+    flex-wrap:wrap;
+  }
+  .mt-item {
+    padding:4px 12px; border-radius:999px; font-size:0.75rem; font-weight:600;
+    opacity:0.4; cursor:pointer; transition:opacity 0.2s; text-decoration:none;
+  }
+  .mt-item.active { opacity:1; }
+  .mt-item:hover { opacity:0.8; }
+
+  /* Search */
+  .search-bar { padding:0 24px; max-width:1200px; margin:0 auto 24px; }
+  .search-bar input {
+    width:100%; padding:10px 16px; border-radius:10px;
+    background:var(--surface); border:1px solid var(--border);
+    color:var(--text); font-size:0.9rem; outline:none; transition:border-color 0.2s;
+  }
+  .search-bar input:focus { border-color:var(--c, #6366f1); }
+
+  /* Node grid */
+  .nodes-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:12px; padding:0 24px; max-width:1200px; margin:0 auto 60px; }
+
+  .node-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:18px; cursor:pointer;
+    text-decoration:none; color:inherit; display:block;
+    transition:all 0.2s; position:relative; overflow:hidden;
+  }
+  .node-card::after {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+    background:var(--c); border-radius:3px 0 0 3px;
+    transform:scaleY(0); transition:transform 0.2s; transform-origin:bottom;
+  }
+  .node-card:hover { border-color:var(--c); transform:translateX(4px); }
+  .node-card:hover::after { transform:scaleY(1); }
+
+  .node-num { font-size:0.7rem; color:var(--muted); margin-bottom:6px; font-family:monospace; }
+  .node-name { font-size:1rem; font-weight:700; margin-bottom:6px; }
+  .node-era { display:inline-block; font-size:0.72rem; padding:2px 8px; border-radius:4px; background:var(--c)15; color:var(--c); margin-bottom:8px; }
+  .node-algo { font-size:0.78rem; color:var(--muted); line-height:1.5; }
+  .node-keywords { display:flex; gap:4px; flex-wrap:wrap; margin-top:10px; }
+  .kw { font-size:0.68rem; padding:2px 6px; border-radius:4px; background:#ffffff08; color:var(--muted); }
+  .node-sim-badge { position:absolute; top:12px; right:12px; font-size:10px; padding:2px 7px; border-radius:999px; background:var(--c)20; color:var(--c); border:1px solid var(--c)40; }
+
+  .empty { text-align:center; padding:80px 24px; color:var(--muted); }
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-back" href="index.html">← 홈</a>
+  <span style="color:var(--border)">|</span>
+  <span class="nav-title" id="navTitle">카테고리</span>
+  <div class="nav-breadcrumb">
+    <span>AI 기술 계보</span><span>›</span><span id="navCat"></span>
+  </div>
+</nav>
+
+<div class="cat-header">
+  <div class="cat-badge" id="catBadge"></div>
+  <h1 id="catTitle"></h1>
+  <p id="catDesc"></p>
+</div>
+
+<div class="mini-timeline" id="miniTimeline"></div>
+<div class="search-bar"><input type="text" id="search" placeholder="노드 이름 또는 키워드로 검색..."></div>
+<div class="nodes-grid" id="nodesGrid"></div>
+
+<script src="data.js"></script>
+<script>
+const CAT_COLORS = {
+  'A':'#6366f1','B':'#8b5cf6','C':'#a855f7','D':'#ec4899',
+  'E':'#f97316','F':'#eab308','G':'#22c55e','H':'#06b6d4',
+  'I':'#3b82f6','J':'#a855f7','K':'#14b8a6','L':'#f59e0b','M':'#ef4444'
+};
+const CAT_EMOJI = {'A':'🔢','B':'⚙️','C':'💡','D':'💻','E':'🔍','F':'🌐','G':'🤖','H':'🧠','I':'📊','J':'🕸️','K':'💬','L':'🎨','M':'🎯'};
+
+// Nodes that have custom simulations
+const HAS_SIM = new Set([1,3,5,8,9,11,13,15,16,17,18,36,39,68,69,73,74,75,76,78,84,96,103,127,140,142,150,159,166,175,183,184,193,207,210,216,219]);
+
+const catLetter = (location.hash.replace('#','') || 'A').toUpperCase();
+const catName = (CATEGORIES.find(c => c['대분류'][0] === catLetter) || {})['대분류'] || '';
+const color = CAT_COLORS[catLetter] || '#6366f1';
+const catInfo = CATEGORIES.find(c => c['대분류'] === catName) || {};
+const catNodes = NODES.filter(n => n['대분류'] === catName);
+
+document.documentElement.style.setProperty('--c', color);
+document.getElementById('navTitle').textContent = catName.replace(/^[A-M]\. /,'');
+document.getElementById('navCat').textContent = catName.replace(/^[A-M]\. /,'');
+
+const badge = document.getElementById('catBadge');
+badge.style.cssText = `background:${color}15;color:${color};border:1px solid ${color}30`;
+badge.innerHTML = `${CAT_EMOJI[catLetter]||catLetter} &nbsp; ${catLetter} 카테고리 &nbsp;·&nbsp; ${catNodes.length}개 노드`;
+
+document.getElementById('catTitle').textContent = catName.replace(/^[A-M]\. /,'');
+document.getElementById('catDesc').textContent = catInfo['핵심 성격'] || '';
+
+// Mini timeline (all categories)
+const mt = document.getElementById('miniTimeline');
+CATEGORIES.forEach(cat => {
+  const l = cat['대분류'][0];
+  const c = CAT_COLORS[l];
+  const a = document.createElement('a');
+  a.className = 'mt-item' + (cat['대분류'] === catName ? ' active' : '');
+  a.href = `category.html#${cat['대분류'][0]}`;
+  a.style.cssText = `background:${c}20;color:${c};border:1px solid ${c}30`;
+  a.textContent = l;
+  a.title = cat['대분류'];
+  mt.appendChild(a);
+});
+
+function renderNodes(nodes) {
+  const grid = document.getElementById('nodesGrid');
+  grid.innerHTML = '';
+  if (!nodes.length) { grid.innerHTML = '<div class="empty">검색 결과가 없습니다.</div>'; return; }
+  nodes.forEach(n => {
+    const card = document.createElement('a');
+    card.className = 'node-card';
+    card.href = `node.html#${n['번호']}`;
+    card.style.setProperty('--c', color);
+    const kws = (n['키워드'] || '').split(';').map(k=>k.trim()).filter(Boolean);
+    const hasSim = HAS_SIM.has(n['번호']);
+    card.innerHTML = `
+      ${hasSim ? '<div class="node-sim-badge">▶ 체험</div>' : ''}
+      <div class="node-num">#${String(n['번호']).padStart(3,'0')}</div>
+      <div class="node-name">${n['기술 노드']}</div>
+      <div class="node-era">${n['대략적 시기']}</div>
+      <div class="node-algo">${n['대표 알고리즘·처리 방식']}</div>
+      <div class="node-keywords">${kws.map(k=>`<span class="kw">${k}</span>`).join('')}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+renderNodes(catNodes);
+
+document.getElementById('search').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  renderNodes(catNodes.filter(n =>
+    n['기술 노드'].toLowerCase().includes(q) ||
+    (n['키워드']||'').toLowerCase().includes(q) ||
+    (n['대표 알고리즘·처리 방식']||'').toLowerCase().includes(q)
+  ));
+});
+</script>
+</body>
+</html>
