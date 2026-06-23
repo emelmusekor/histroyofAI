@@ -1,98 +1,141 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>몇 번부터 AI일까? — AI 기술 계보 탐험</title>
+<title>History of Artificial Intelligence</title>
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --border: #1e1e2e;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --A: #6366f1; --B: #8b5cf6; --C: #a855f7; --D: #ec4899;
-    --E: #f97316; --F: #eab308; --G: #22c55e; --H: #06b6d4;
-    --I: #3b82f6; --J: #a855f7; --K: #14b8a6; --L: #f59e0b;
-    --M: #ef4444;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
-  .hero { position: relative; overflow: hidden; padding: 80px 24px 60px; text-align: center; background: radial-gradient(ellipse 80% 60% at 50% -10%, #1a1040 0%, transparent 70%); }
-  .hero::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
-  .hero-tag { display: inline-block; padding: 6px 16px; border-radius: 999px; border: 1px solid #6366f130; background: #6366f110; color: #818cf8; font-size: 13px; letter-spacing: 0.05em; margin-bottom: 24px; }
-  .hero h1 { font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
-  .hero h1 span { background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .hero p { font-size: 1.1rem; color: var(--muted); max-width: 600px; margin: 0 auto 32px; line-height: 1.7; }
-  .hero-stats { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
-  .stat { text-align: center; }
-  .stat-num { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
-  .grid-section { padding: 40px 24px; max-width: 1400px; margin: 0 auto; }
-  .section-title { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 24px; }
-  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-  .cat-card { position: relative; overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.25s; text-decoration: none; display: block; color: inherit; }
-  .cat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--c); }
-  .cat-card:hover { transform: translateY(-4px); border-color: var(--c); box-shadow: 0 12px 40px var(--c)20; }
-  .cat-letter { display: inline-block; width: 40px; height: 40px; border-radius: 10px; background: var(--c)20; border: 1px solid var(--c)40; color: var(--c); font-size: 1.1rem; font-weight: 800; line-height: 40px; text-align: center; margin-bottom: 12px; }
-  .cat-name { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
-  .cat-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
-  .cat-footer { display: flex; justify-content: space-between; align-items: center; }
-  .cat-count { font-size: 0.78rem; color: var(--muted); }
-  .cat-count span { color: var(--c); font-weight: 700; }
-  .cat-arrow { width: 28px; height: 28px; border-radius: 50%; background: var(--c)15; border: 1px solid var(--c)30; color: var(--c); display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.2s; }
-  .cat-card:hover .cat-arrow { background: var(--c); color: white; }
-  footer { text-align: center; padding: 32px; color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--border); }
+:root {
+  --bg: #0a0a0f; --surface: #111118; --border: #1e1e2e; --text: #e2e8f0; --muted: #64748b;
+  --A: #6366f1; --B: #8b5cf6; --C: #a855f7; --D: #ec4899; --E: #f97316; --F: #eab308;
+  --G: #22c55e; --H: #06b6d4; --I: #3b82f6; --J: #a855f7; --K: #14b8a6; --L: #f59e0b; --M: #ef4444;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+
+.hero {
+  position: relative; overflow: hidden; padding: 120px 24px 100px;
+  background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.1) 100%);
+  border-bottom: 1px solid var(--border);
+}
+.hero-content { max-width: 1000px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
+.hero h1 { font-size: clamp(2.8rem, 8vw, 4.2rem); font-weight: 900; line-height: 1.1; margin-bottom: 20px;
+  background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero .subtitle { font-size: 1.2rem; color: #a78bfa; margin-bottom: 28px; font-weight: 500; letter-spacing: 0.05em; }
+.hero p { font-size: 1.05rem; color: var(--muted); max-width: 720px; margin: 0 auto 50px; line-height: 1.8; }
+.stats { display: flex; justify-content: center; gap: 80px; flex-wrap: wrap; margin-bottom: 50px; }
+.stat { text-align: center; }
+.stat-num { font-size: 2.8rem; font-weight: 900; color: #6366f1; display: block; }
+.stat-label { font-size: 0.95rem; color: var(--muted); margin-top: 6px; }
+.btn { display: inline-block; padding: 14px 40px; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 20px 50px rgba(99,102,241,0.3); }
+
+.section { padding: 80px 24px; max-width: 1400px; margin: 0 auto; }
+.section-title { font-size: 1.3rem; text-transform: uppercase; letter-spacing: 0.15em; color: #a78bfa; margin-bottom: 40px; font-weight: 700; }
+
+.cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+.cat-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; cursor: pointer; text-decoration: none; color: inherit; transition: all 0.3s; overflow: hidden; }
+.cat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--c); }
+.cat-card:hover { transform: translateY(-6px); border-color: var(--c); box-shadow: 0 20px 40px var(--c)20; }
+.cat-letter { display: inline-block; width: 48px; height: 48px; border-radius: 12px; background: var(--c)20; border: 1px solid var(--c)40; color: var(--c); font-size: 1.4rem; font-weight: 800; line-height: 48px; text-align: center; margin-bottom: 16px; }
+.cat-name { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
+.cat-desc { font-size: 0.95rem; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+.cat-count { font-size: 0.85rem; color: var(--c); font-weight: 600; }
+
+.timeline { padding: 60px 24px; background: linear-gradient(90deg, rgba(99,102,241,0.05) 0%, transparent 100%); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.timeline-container { max-width: 1200px; margin: 0 auto; }
+.timeline-title { font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.1em; color: #a78bfa; margin-bottom: 30px; font-weight: 700; }
+.timeline-bars { display: flex; gap: 4px; height: 40px; border-radius: 20px; overflow: hidden; background: var(--border); }
+.timeline-bar { flex: 1; background: linear-gradient(135deg, var(--c1), var(--c2)); transition: filter 0.2s; cursor: pointer; }
+.timeline-bar:hover { filter: brightness(1.2); }
+
+footer { text-align: center; padding: 40px 24px; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--border); }
 </style>
 </head>
 <body>
+
 <div class="hero">
-  <div class="hero-tag">🧬 AI 기술 계보 인터랙티브 탐험</div>
-  <h1>몇 번부터 <span>AI</span>일까?</h1>
-  <p>선사시대 수량 감각부터 현대 기초모델까지 — AI를 만들어 온 226개의 기술 노드를 직접 체험해보세요.</p>
-  <div class="hero-stats">
-    <div class="stat"><div class="stat-num">226</div><div class="stat-label">기술 노드</div></div>
-    <div class="stat"><div class="stat-num">13</div><div class="stat-label">대분류</div></div>
-    <div class="stat"><div class="stat-num">수천 년</div><div class="stat-label">기술의 역사</div></div>
+  <div class="hero-content">
+    <h1>History of Artificial Intelligence</h1>
+    <div class="subtitle">Actually Machine Intelligence</div>
+    <p>Experience 226 technology nodes spanning 5,000+ years — from prehistoric number sense to modern foundation models. An interactive journey through the evolution of machine intelligence.</p>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-num">226</span>
+        <div class="stat-label">Technology Nodes</div>
+      </div>
+      <div class="stat">
+        <span class="stat-num">13</span>
+        <div class="stat-label">Categories</div>
+      </div>
+      <div class="stat">
+        <span class="stat-num">5000+</span>
+        <div class="stat-label">Years of History</div>
+      </div>
+    </div>
+
+    <a href="#explore" class="btn">Start Exploring →</a>
   </div>
 </div>
 
-<div class="grid-section">
-  <div class="section-title">대분류 탐색 — 카테고리를 선택해 노드를 탐험하세요</div>
+<div class="timeline">
+  <div class="timeline-container">
+    <div class="timeline-title">The 13 Chapters of Machine Intelligence</div>
+    <div class="timeline-bars">
+      <div class="timeline-bar" style="--c1:#6366f1;--c2:#8b5cf6" onclick="location.href='category.html#A'" title="Numbers & Representation"></div>
+      <div class="timeline-bar" style="--c1:#8b5cf6;--c2:#a855f7" onclick="location.href='category.html#B'" title="Mechanical & Analog"></div>
+      <div class="timeline-bar" style="--c1:#a855f7;--c2:#ec4899" onclick="location.href='category.html#C'" title="Logic & Computation"></div>
+      <div class="timeline-bar" style="--c1:#ec4899;--c2:#f97316" onclick="location.href='category.html#D'" title="Abstraction & Programming"></div>
+      <div class="timeline-bar" style="--c1:#f97316;--c2:#eab308" onclick="location.href='category.html#E'" title="Algorithms & Structures"></div>
+      <div class="timeline-bar" style="--c1:#eab308;--c2:#22c55e" onclick="location.href='category.html#F'" title="Data & Information"></div>
+      <div class="timeline-bar" style="--c1:#22c55e;--c2:#06b6d4" onclick="location.href='category.html#G'" title="Control & Robotics"></div>
+      <div class="timeline-bar" style="--c1:#06b6d4;--c2:#3b82f6" onclick="location.href='category.html#H'" title="Classical AI & Search"></div>
+      <div class="timeline-bar" style="--c1:#3b82f6;--c2:#a855f7" onclick="location.href='category.html#I'" title="Statistical Learning"></div>
+      <div class="timeline-bar" style="--c1:#a855f7;--c2:#14b8a6" onclick="location.href='category.html#J'" title="Neural Networks"></div>
+      <div class="timeline-bar" style="--c1:#14b8a6;--c2:#f59e0b" onclick="location.href='category.html#K'" title="NLP & Transformers"></div>
+      <div class="timeline-bar" style="--c1:#f59e0b;--c2:#ec4899" onclick="location.href='category.html#L'" title="Generative Models"></div>
+      <div class="timeline-bar" style="--c1:#ec4899;--c2:#ef4444" onclick="location.href='category.html#M'" title="Reinforcement & Alignment"></div>
+    </div>
+  </div>
+</div>
+
+<div id="explore" class="section">
+  <h2 class="section-title">Explore by Category</h2>
   <div class="cat-grid" id="catGrid"></div>
 </div>
 
-<footer>몇 번부터 AI일까? — 기술 계보 시각화 프로젝트</footer>
+<footer>
+  <p><strong>History of Artificial Intelligence</strong> — An interactive visualization of 5000+ years of machine intelligence</p>
+  <p style="margin-top: 12px; font-size: 0.85rem;">226 nodes across 13 categories • Interactive simulations • Deep technical details</p>
+</footer>
 
 <script src="data.js"></script>
 <script>
-const CAT_COLORS = {
-  'A': '#6366f1','B': '#8b5cf6','C': '#a855f7','D': '#ec4899',
-  'E': '#f97316','F': '#eab308','G': '#22c55e','H': '#06b6d4',
-  'I': '#3b82f6','J': '#a855f7','K': '#14b8a6','L': '#f59e0b','M': '#ef4444'
+const COLORS = {
+  'A':'#6366f1','B':'#8b5cf6','C':'#a855f7','D':'#ec4899','E':'#f97316','F':'#eab308',
+  'G':'#22c55e','H':'#06b6d4','I':'#3b82f6','J':'#a855f7','K':'#14b8a6','L':'#f59e0b','M':'#ef4444'
 };
-const CAT_EMOJI = {'A':'🔢','B':'⚙️','C':'💡','D':'💻','E':'🔍','F':'🌐','G':'🤖','H':'🧠','I':'📊','J':'🕸️','K':'💬','L':'🎨','M':'🎯'};
+const EMOJI = {'A':'🔢','B':'⚙️','C':'💡','D':'💻','E':'🔍','F':'🌐','G':'🤖','H':'🧠','I':'📊','J':'🕸️','K':'💬','L':'🎨','M':'🎯'};
 
-const catGrid = document.getElementById('catGrid');
+const grid = document.getElementById('catGrid');
 CATEGORIES.forEach(cat => {
   const letter = cat['대분류'][0];
-  const color = CAT_COLORS[letter];
+  const color = COLORS[letter];
   const count = NODES.filter(n => n['대분류'] === cat['대분류']).length;
   const card = document.createElement('a');
   card.className = 'cat-card';
   card.href = `category.html#${letter}`;
   card.style.setProperty('--c', color);
   card.innerHTML = `
-    <div class="cat-letter">${CAT_EMOJI[letter]}</div>
-    <div class="cat-name">${cat['대분류']}</div>
+    <div class="cat-letter">${EMOJI[letter]}</div>
+    <div class="cat-name">${cat['대분류'].split('. ')[1] || cat['대분류']}</div>
     <div class="cat-desc">${cat['핵심 성격']}</div>
-    <div class="cat-footer">
-      <div class="cat-count"><span>${count}</span>개 노드</div>
-      <div class="cat-arrow">→</div>
-    </div>
+    <div class="cat-count">${count} nodes</div>
   `;
-  catGrid.appendChild(card);
+  grid.appendChild(card);
 });
 </script>
+
 </body>
 </html>

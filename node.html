@@ -157,7 +157,7 @@ function loadNode() {
     ${navHTML}
   `;
 
-  // 시뮬레이션 로드
+  // 시뮬레이션 로드 - 로더를 기다림
   const runSim = () => {
     if (window.SIM_MAP && window.SIM_MAP[actualNodeId]) {
       window.SIM_MAP[actualNodeId]();
@@ -166,8 +166,15 @@ function loadNode() {
     }
   };
 
-  setTimeout(runSim, 100);
-  setTimeout(runSim, 500);
+  // 로더가 완료될 때까지 대기
+  const waitForSims = () => {
+    if (window.simLoaded && Object.keys(window.SIM_MAP || {}).length > 0) {
+      runSim();
+    } else {
+      setTimeout(waitForSims, 200);
+    }
+  };
+  waitForSims();
 }
 
 function defaultFlowSim() {
