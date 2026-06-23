@@ -18,24 +18,9 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
-
-  /* Hero */
-  .hero {
-    position: relative; overflow: hidden;
-    padding: 80px 24px 60px;
-    text-align: center;
-    background: radial-gradient(ellipse 80% 60% at 50% -10%, #1a1040 0%, transparent 70%);
-  }
-  .hero::before {
-    content: ''; position: absolute; inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  }
-  .hero-tag {
-    display: inline-block; padding: 6px 16px; border-radius: 999px;
-    border: 1px solid #6366f130; background: #6366f110;
-    color: #818cf8; font-size: 13px; letter-spacing: 0.05em;
-    margin-bottom: 24px;
-  }
+  .hero { position: relative; overflow: hidden; padding: 80px 24px 60px; text-align: center; background: radial-gradient(ellipse 80% 60% at 50% -10%, #1a1040 0%, transparent 70%); }
+  .hero::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+  .hero-tag { display: inline-block; padding: 6px 16px; border-radius: 999px; border: 1px solid #6366f130; background: #6366f110; color: #818cf8; font-size: 13px; letter-spacing: 0.05em; margin-bottom: 24px; }
   .hero h1 { font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
   .hero h1 span { background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .hero p { font-size: 1.1rem; color: var(--muted); max-width: 600px; margin: 0 auto 32px; line-height: 1.7; }
@@ -43,45 +28,13 @@
   .stat { text-align: center; }
   .stat-num { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
-
-  /* Timeline bar */
-  .timeline-bar {
-    display: flex; overflow-x: auto; gap: 2px;
-    padding: 16px 24px; background: var(--surface);
-    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-    scrollbar-width: none;
-  }
-  .timeline-bar::-webkit-scrollbar { display: none; }
-  .tl-seg {
-    flex: 1; min-width: 60px; padding: 8px 12px; border-radius: 6px;
-    font-size: 11px; font-weight: 700; text-align: center; cursor: pointer;
-    transition: all 0.2s; opacity: 0.7; white-space: nowrap;
-  }
-  .tl-seg:hover { opacity: 1; transform: translateY(-2px); }
-
-  /* Grid */
   .grid-section { padding: 40px 24px; max-width: 1400px; margin: 0 auto; }
   .section-title { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 24px; }
   .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-
-  .cat-card {
-    position: relative; overflow: hidden;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 24px;
-    cursor: pointer; transition: all 0.25s;
-    text-decoration: none; display: block; color: inherit;
-  }
-  .cat-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: var(--c); border-radius: 16px 16px 0 0;
-  }
+  .cat-card { position: relative; overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.25s; text-decoration: none; display: block; color: inherit; }
+  .cat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--c); }
   .cat-card:hover { transform: translateY(-4px); border-color: var(--c); box-shadow: 0 12px 40px var(--c)20; }
-  .cat-letter {
-    display: inline-block; width: 40px; height: 40px; border-radius: 10px;
-    background: var(--c)20; border: 1px solid var(--c)40;
-    color: var(--c); font-size: 1.1rem; font-weight: 800;
-    line-height: 40px; text-align: center; margin-bottom: 12px;
-  }
+  .cat-letter { display: inline-block; width: 40px; height: 40px; border-radius: 10px; background: var(--c)20; border: 1px solid var(--c)40; color: var(--c); font-size: 1.1rem; font-weight: 800; line-height: 40px; text-align: center; margin-bottom: 12px; }
   .cat-name { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
   .cat-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
   .cat-footer { display: flex; justify-content: space-between; align-items: center; }
@@ -89,15 +42,6 @@
   .cat-count span { color: var(--c); font-weight: 700; }
   .cat-arrow { width: 28px; height: 28px; border-radius: 50%; background: var(--c)15; border: 1px solid var(--c)30; color: var(--c); display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.2s; }
   .cat-card:hover .cat-arrow { background: var(--c); color: white; }
-
-  /* Progress path */
-  .path-section { padding: 40px 24px; max-width: 1400px; margin: 0 auto; border-top: 1px solid var(--border); }
-  .path-title { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 24px; }
-  .path-flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .path-node { padding: 6px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-  .path-node:hover { transform: scale(1.05); }
-  .path-arrow { color: var(--muted); font-size: 16px; }
-
   footer { text-align: center; padding: 32px; color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--border); }
 </style>
 </head>
@@ -113,16 +57,9 @@
   </div>
 </div>
 
-<div class="timeline-bar" id="tlBar"></div>
-
 <div class="grid-section">
   <div class="section-title">대분류 탐색 — 카테고리를 선택해 노드를 탐험하세요</div>
   <div class="cat-grid" id="catGrid"></div>
-</div>
-
-<div class="path-section">
-  <div class="path-title">AI 탄생 경로 — 처음부터 끝까지</div>
-  <div class="path-flow" id="pathFlow"></div>
 </div>
 
 <footer>몇 번부터 AI일까? — 기술 계보 시각화 프로젝트</footer>
@@ -134,25 +71,8 @@ const CAT_COLORS = {
   'E': '#f97316','F': '#eab308','G': '#22c55e','H': '#06b6d4',
   'I': '#3b82f6','J': '#a855f7','K': '#14b8a6','L': '#f59e0b','M': '#ef4444'
 };
-const CAT_EMOJI = {
-  'A':'🔢','B':'⚙️','C':'💡','D':'💻','E':'🔍','F':'🌐',
-  'G':'🤖','H':'🧠','I':'📊','J':'🕸️','K':'💬','L':'🎨','M':'🎯'
-};
+const CAT_EMOJI = {'A':'🔢','B':'⚙️','C':'💡','D':'💻','E':'🔍','F':'🌐','G':'🤖','H':'🧠','I':'📊','J':'🕸️','K':'💬','L':'🎨','M':'🎯'};
 
-// Timeline bar
-const tlBar = document.getElementById('tlBar');
-CATEGORIES.forEach(cat => {
-  const letter = cat['대분류'][0];
-  const color = CAT_COLORS[letter];
-  const seg = document.createElement('div');
-  seg.className = 'tl-seg';
-  seg.style.cssText = `background:${color}20;color:${color};border:1px solid ${color}30`;
-  seg.textContent = cat['대분류'].replace(/^[A-M]\. /, '');
-  seg.onclick = () => location.href = `category.html#${cat['대분류'][0]}`;
-  tlBar.appendChild(seg);
-});
-
-// Category grid
 const catGrid = document.getElementById('catGrid');
 CATEGORIES.forEach(cat => {
   const letter = cat['대분류'][0];
@@ -160,10 +80,10 @@ CATEGORIES.forEach(cat => {
   const count = NODES.filter(n => n['대분류'] === cat['대분류']).length;
   const card = document.createElement('a');
   card.className = 'cat-card';
-  card.href = `category.html#${cat['대분류'][0]}`;
+  card.href = `category.html#${letter}`;
   card.style.setProperty('--c', color);
   card.innerHTML = `
-    <div class="cat-letter">${CAT_EMOJI[letter] || letter}</div>
+    <div class="cat-letter">${CAT_EMOJI[letter]}</div>
     <div class="cat-name">${cat['대분류']}</div>
     <div class="cat-desc">${cat['핵심 성격']}</div>
     <div class="cat-footer">
@@ -172,26 +92,6 @@ CATEGORIES.forEach(cat => {
     </div>
   `;
   catGrid.appendChild(card);
-});
-
-// Path flow
-const pathFlow = document.getElementById('pathFlow');
-const catNames = CATEGORIES.map(c => c['대분류'].replace(/^[A-M]\. /, ''));
-catNames.forEach((name, i) => {
-  const letter = CATEGORIES[i]['대분류'][0];
-  const color = CAT_COLORS[letter];
-  const node = document.createElement('span');
-  node.className = 'path-node';
-  node.style.cssText = `background:${color}15;color:${color};border:1px solid ${color}30`;
-  node.textContent = name;
-  node.onclick = () => location.href = `category.html#${CATEGORIES[i]['대분류'][0]}`;
-  pathFlow.appendChild(node);
-  if (i < catNames.length - 1) {
-    const arrow = document.createElement('span');
-    arrow.className = 'path-arrow';
-    arrow.textContent = '→';
-    pathFlow.appendChild(arrow);
-  }
 });
 </script>
 </body>
