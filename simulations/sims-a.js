@@ -134,7 +134,7 @@ function sim4() {
       ctx.beginPath();
       ctx.rect(20, y, 360, 40);
       ctx.stroke();
-      ctx.fillStyle = 'var(--c)';
+      ctx.fillStyle = simColor();
       for (let j = 0; j < cols && idx < dots; j++) {
         ctx.beginPath();
         ctx.arc(40 + j * 70, y + 20, 10, 0, Math.PI * 2);
@@ -143,14 +143,15 @@ function sim4() {
       }
     }
   };
-  document.getElementById('simContainer').innerHTML = '';
-  document.getElementById('simContainer').appendChild(canvas);
-  document.getElementById('simContainer').innerHTML += `
+  const _sc4 = document.getElementById('simContainer');
+  _sc4.innerHTML = '<div id="simCanvasHolder"></div>';
+  _sc4.querySelector('#simCanvasHolder').appendChild(canvas);
+  _sc4.querySelector('#simCanvasHolder').insertAdjacentHTML('afterend', `
     <div class="sim-controls" style="margin-top:10px">
       <button class="sim-btn primary" onclick="dots++;(${render.toString()})()">＋ 점 추가</button>
       <button class="sim-btn" onclick="dots=0;(${render.toString()})()">초기화</button>
       <span class="sim-info" id="dotCount">0개 / 0묶음</span>
-    </div>`;
+    </div>`);
   window.dots = 0;
   render();
   setInterval(() => {
@@ -218,9 +219,9 @@ function sim6() {
       <p class="sim-info" style="margin-bottom:10px">각 자리수를 조절해보세요.</p>
       <div id="placeValue"></div>
       <div class="sim-controls" style="flex-direction:column;gap:8px">
-        <div><label>백: <input type="range" min="0" max="9" value="0" style="width:200px;accent-color:var(--c)" oninput="h=${'{this.value}'};(${render.toString()})()"></label></div>
-        <div><label>십: <input type="range" min="0" max="9" value="0" style="width:200px;accent-color:var(--c)" oninput="t=${'{this.value}'};(${render.toString()})()"></label></div>
-        <div><label>일: <input type="range" min="0" max="9" value="0" style="width:200px;accent-color:var(--c)" oninput="o=${'{this.value}'};(${render.toString()})()"></label></div>
+        <div><label>백: <input type="range" min="0" max="9" value="0" style="width:200px;accent-color:var(--c)" oninput="h=this.value;(${render.toString()})()"></label></div>
+        <div><label>십: <input type="range" min="0" max="9" value="0" style="width:200px;accent-color:var(--c)" oninput="t=this.value;(${render.toString()})()"></label></div>
+        <div><label>일: <input type="range" min="0" max="9" value="0" style="width:200px;accent-color:var(--c)" oninput="o=this.value;(${render.toString()})()"></label></div>
       </div>
     </div>`;
   render();
@@ -306,7 +307,7 @@ function sim9() {
       ctx.lineTo(W, oy + y * s);
       ctx.stroke();
     }
-    ctx.strokeStyle = 'var(--c)';
+    ctx.strokeStyle = simColor();
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(0, oy);
@@ -331,7 +332,7 @@ function sim9() {
     pts.forEach((p) => {
       ctx.beginPath();
       ctx.arc(p.px, p.py, 5, 0, Math.PI * 2);
-      ctx.fillStyle = 'var(--c)';
+      ctx.fillStyle = simColor();
       ctx.fill();
     });
   };
@@ -345,12 +346,12 @@ function sim9() {
     document.getElementById('coordInfo').textContent = `마지막: (${cx.toFixed(2)}, ${cy.toFixed(2)}) — 총 ${pts.length}개`;
     draw();
   };
-  sc.innerHTML = '';
-  sc.appendChild(canvas);
-  sc.innerHTML += `<div class="sim-controls" style="margin-top:8px">
+  sc.innerHTML = '<div id="simCanvasHolder"></div>';
+  sc.querySelector('#simCanvasHolder').appendChild(canvas);
+  sc.querySelector('#simCanvasHolder').insertAdjacentHTML('afterend', `<div class="sim-controls" style="margin-top:8px">
     <button class="sim-btn" onclick="location.reload()">지우기</button>
   </div>
-  <div class="sim-info" id="coordInfo" style="margin-top:8px">캔버스를 클릭해 점을 찍으세요</div>`;
+  <div class="sim-info" id="coordInfo" style="margin-top:8px">캔버스를 클릭해 점을 찍으세요</div>`);
   draw();
 }
 
@@ -382,7 +383,7 @@ function sim10() {
       </div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
         <label>x = </label>
-        <input type="range" min="-5" max="5" value="3" step="0.5" style="flex:1;accent-color:var(--c)" oninput="x=${'{this.value}'};(${render.toString()})()">
+        <input type="range" min="-5" max="5" value="3" step="0.5" style="flex:1;accent-color:var(--c)" oninput="x=this.value;(${render.toString()})()">
         <span style="width:40px;font-weight:700;color:var(--c)">${x}</span>
       </div>
       <div id="fnDisplay"></div>
@@ -429,7 +430,7 @@ function sim11() {
     ctx.moveTo(ox, 0);
     ctx.lineTo(ox, H);
     ctx.stroke();
-    ctx.strokeStyle = 'var(--c)';
+    ctx.strokeStyle = simColor();
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     for (let px = 0; px <= W; px++) {
@@ -453,15 +454,15 @@ function sim11() {
     ctx.fillStyle = '#f97316';
     ctx.fill();
   };
-  sc.innerHTML = '';
-  sc.appendChild(canvas);
-  sc.innerHTML += `
+  sc.innerHTML = '<div id="simCanvasHolder"></div>';
+  sc.querySelector('#simCanvasHolder').appendChild(canvas);
+  sc.querySelector('#simCanvasHolder').insertAdjacentHTML('afterend', `
     <div class="sim-controls" style="margin-top:8px">
       <span class="sim-label">x 위치:</span>
-      <input type="range" id="diffX" min="-30" max="30" value="10" style="flex:1;accent-color:var(--c)" oninput="xv=${'{this.value / 10}'};draw(xv);document.getElementById('diffInfo').textContent='f('+xv.toFixed(1)+') = '+((0.1*xv*xv-0.5).toFixed(2))+',  기울기 f'(x) = '+(0.2*xv).toFixed(2)">
+      <input type="range" id="diffX" min="-30" max="30" value="10" style="flex:1;accent-color:var(--c)" oninput="xv=this.value / 10;draw(xv);document.getElementById('diffInfo').textContent='f('+xv.toFixed(1)+') = '+((0.1*xv*xv-0.5).toFixed(2))+',  기울기 f'(x) = '+(0.2*xv).toFixed(2)">
       <span id="diffVal" style="font-family:monospace;font-size:0.8rem;color:var(--c)">x=1.0</span>
     </div>
-    <div class="sim-info" id="diffInfo">기울기를 통해 극값 찾기</div>`;
+    <div class="sim-info" id="diffInfo">기울기를 통해 극값 찾기</div>`);
   window.draw = draw;
   draw(1);
 }
@@ -489,9 +490,9 @@ function sim12() {
       const y = Math.sin(x);
       const rh = y * h / 2;
       const rx = ox + i * dx;
-      ctx.fillStyle = 'var(--c)40';
+      ctx.fillStyle = simColor() + '66';
       ctx.fillRect(rx, 10 + h / 2 - rh, dx - 1, rh);
-      ctx.strokeStyle = 'var(--c)';
+      ctx.strokeStyle = simColor();
       ctx.lineWidth = 1;
       ctx.strokeRect(rx, 10 + h / 2 - rh, dx - 1, rh);
       area += y * (Math.PI * 2 / n);
@@ -500,14 +501,14 @@ function sim12() {
     ctx.font = '11px monospace';
     ctx.fillText(`근사 넓이: ${area.toFixed(2)} (정확: ${(2 * Math.PI).toFixed(2)})`, ox + 4, H - 8);
   };
-  sc.innerHTML = '';
-  sc.appendChild(canvas);
-  sc.innerHTML += `
+  sc.innerHTML = '<div id="simCanvasHolder"></div>';
+  sc.querySelector('#simCanvasHolder').appendChild(canvas);
+  sc.querySelector('#simCanvasHolder').insertAdjacentHTML('afterend', `
     <div class="sim-controls" style="margin-top:8px">
       <span class="sim-label">직사각형 개수:</span>
-      <input type="range" id="rectSlider" min="4" max="100" value="10" style="flex:1;accent-color:var(--c)" oninput="rects=${'{this.value}'};draw(rects);document.getElementById('rectNum').textContent=rects">
+      <input type="range" id="rectSlider" min="4" max="100" value="10" style="flex:1;accent-color:var(--c)" oninput="rects=this.value;draw(rects);document.getElementById('rectNum').textContent=rects">
       <span id="rectNum" style="font-weight:700;color:var(--c)">10</span>
-    </div>`;
+    </div>`);
   window.draw = draw;
   draw(10);
 }
@@ -532,9 +533,9 @@ function sim13() {
     for (let i = 0; i < 6; i++) {
       const x = sx + i * (bw + gap);
       const h = total > 0 ? (counts[i] / total) * barH : 0;
-      ctx.fillStyle = 'var(--c)30';
+      ctx.fillStyle = simColor() + '4d';
       ctx.fillRect(x, H - 30 - barH, bw, barH);
-      ctx.fillStyle = 'var(--c)';
+      ctx.fillStyle = simColor();
       ctx.fillRect(x, H - 30 - h, bw, h);
       ctx.fillStyle = '#e2e8f0';
       ctx.font = 'bold 12px sans-serif';
@@ -589,7 +590,7 @@ function sim14() {
   document.getElementById('simContainer').innerHTML = `
     <div style="padding:10px">
       <p class="sim-info" style="margin-bottom:10px">숫자를 쉼표로 구분해 입력하세요.</p>
-      <input type="text" id="numsInput" value="1,3,5,7,9" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);margin-bottom:10px" oninput="const vs=${'{this.value.split(',').map(x => parseFloat(x)).filter(x => !isNaN(x))}'};if(vs.length > 0) nums = vs; (${calc.toString()})()">
+      <input type="text" id="numsInput" value="1,3,5,7,9" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);margin-bottom:10px" oninput="const vs=this.value.split(',').map(x => parseFloat(x)).filter(x => !isNaN(x));if(vs.length > 0) nums = vs; (${calc.toString()})()">
       <div id="statsResult"></div>
     </div>`;
   calc();
@@ -621,7 +622,7 @@ function sim15() {
       ctx.lineTo(W, cy + i * s);
       ctx.stroke();
     }
-    ctx.strokeStyle = 'var(--c)';
+    ctx.strokeStyle = simColor();
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(0, cy);
@@ -650,15 +651,15 @@ function sim15() {
     ctx.font = '11px monospace';
     ctx.fillText(`점곱: ${dot}`, 10, 20);
   };
-  sc.innerHTML = '';
-  sc.appendChild(canvas);
-  sc.innerHTML += `
+  sc.innerHTML = '<div id="simCanvasHolder"></div>';
+  sc.querySelector('#simCanvasHolder').appendChild(canvas);
+  sc.querySelector('#simCanvasHolder').insertAdjacentHTML('afterend', `
     <div class="sim-controls" style="flex-direction:column;gap:8px;margin-top:10px">
-      <label style="display:flex;gap:8px">v1x: <input type="range" min="-3" max="3" step="0.5" value="${v1x}" style="flex:1;accent-color:#22c55e" oninput="v1x=${'{this.value}'};(${draw.toString()})()"></label>
-      <label style="display:flex;gap:8px">v1y: <input type="range" min="-3" max="3" step="0.5" value="${v1y}" style="flex:1;accent-color:#22c55e" oninput="v1y=${'{this.value}'};(${draw.toString()})()"></label>
-      <label style="display:flex;gap:8px">v2x: <input type="range" min="-3" max="3" step="0.5" value="${v2x}" style="flex:1;accent-color:#3b82f6" oninput="v2x=${'{this.value}'};(${draw.toString()})()"></label>
-      <label style="display:flex;gap:8px">v2y: <input type="range" min="-3" max="3" step="0.5" value="${v2y}" style="flex:1;accent-color:#3b82f6" oninput="v2y=${'{this.value}'};(${draw.toString()})()"></label>
-    </div>`;
+      <label style="display:flex;gap:8px">v1x: <input type="range" min="-3" max="3" step="0.5" value="${v1x}" style="flex:1;accent-color:#22c55e" oninput="v1x=this.value;(${draw.toString()})()"></label>
+      <label style="display:flex;gap:8px">v1y: <input type="range" min="-3" max="3" step="0.5" value="${v1y}" style="flex:1;accent-color:#22c55e" oninput="v1y=this.value;(${draw.toString()})()"></label>
+      <label style="display:flex;gap:8px">v2x: <input type="range" min="-3" max="3" step="0.5" value="${v2x}" style="flex:1;accent-color:#3b82f6" oninput="v2x=this.value;(${draw.toString()})()"></label>
+      <label style="display:flex;gap:8px">v2y: <input type="range" min="-3" max="3" step="0.5" value="${v2y}" style="flex:1;accent-color:#3b82f6" oninput="v2y=this.value;(${draw.toString()})()"></label>
+    </div>`);
   window.v1x = v1x;
   window.v1y = v1y;
   window.v2x = v2x;
@@ -710,7 +711,7 @@ function sim17() {
   document.getElementById('simContainer').innerHTML = `
     <div style="padding:10px">
       <p class="sim-info" style="margin-bottom:10px">확률이 균등할수록 불확실성(엔트로피)이 높습니다.</p>
-      <input type="range" min="0" max="1" step="0.01" value="0.5" style="width:100%;margin-bottom:10px;accent-color:var(--c)" oninput="p1=${'{this.value}'};(${calc.toString()})(p1)">
+      <input type="range" min="0" max="1" step="0.01" value="0.5" style="width:100%;margin-bottom:10px;accent-color:var(--c)" oninput="p1=this.value;(${calc.toString()})(p1)">
       <div id="entropyDisplay"></div>
     </div>`;
   calc(0.5);

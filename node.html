@@ -157,36 +157,53 @@ function loadNode() {
     ${navHTML}
   `;
 
-  // 시뮬레이션 로드 - 로더를 기다림
+  // 화이트리스트에 있고 실제 함수가 있을 때만 인터랙티브 시뮬레이션 실행.
+  // 그 외에는 솔직하게 '준비 중'으로 표시한다.
   const runSim = () => {
-    if (window.SIM_MAP && window.SIM_MAP[actualNodeId]) {
-      window.SIM_MAP[actualNodeId]();
+    const whitelisted = window.SIM_WHITELIST && window.SIM_WHITELIST.has(actualNodeId);
+    if (whitelisted && window.SIM_MAP && typeof window.SIM_MAP[actualNodeId] === 'function') {
+      try {
+        window.SIM_MAP[actualNodeId]();
+      } catch (err) {
+        console.error('Simulation error for node', actualNodeId, err);
+        comingSoonState(node);
+      }
     } else {
-      defaultFlowSim();
+      comingSoonState(node);
     }
   };
 
-  // 로더가 완료될 때까지 대기
+  // 로더가 완료될 때까지 대기 (화이트리스트는 즉시 사용 가능)
   const waitForSims = () => {
-    if (window.simLoaded && Object.keys(window.SIM_MAP || {}).length > 0) {
+    if (window.simLoaded) {
       runSim();
     } else {
-      setTimeout(waitForSims, 200);
+      setTimeout(waitForSims, 150);
     }
   };
   waitForSims();
 }
 
-function defaultFlowSim() {
-  document.getElementById('simTag').textContent = '처리 흐름 시각화';
-  const node = NODES.find(n => n['번호'] === parseInt(location.hash.replace('#','') || '1')) || NODES[0];
+// 인터랙티브 시뮬레이션이 아직 없는 노드를 위한 솔직한 안내 + 개념 흐름도
+function comingSoonState(node) {
+  document.getElementById('simTag').textContent = '준비 중';
   const boxes = [
-    node['표상·데이터'] || '입력 데이터',
-    node['대표 알고리즘·처리 방식'] || '처리',
-    node['모델·학습/원리'] || '모델/원리',
-    node['적용·영향'] || '결과/적용'
-  ];
-  document.getElementById('simContainer').innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;height:100%">' + boxes.map((b,i) => '<div style="padding:12px 20px;border-radius:10px;border:1px solid var(--c)30;background:var(--c)10;color:var(--text);max-width:300px;text-align:center;transition:all .3s" onmouseover="this.style.backgroundColor=\'var(--c)20)\';this.style.transform=\'scale(1.03)\'" onmouseout="this.style.backgroundColor=\'var(--c)10)\';this.style.transform=\'scale(1)\'">' + b + '</div>' + (i < boxes.length - 1 ? '<div style="color:var(--c);font-size:18px">↓</div>' : '')).join('') + '</div>';
+    node['표상·데이터'],
+    node['대표 알고리즘·처리 방식'],
+    node['모델·학습/원리'],
+    node['과제 처리']
+  ].filter(Boolean);
+  const flow = boxes.map((b, i) =>
+    '<div style="padding:10px 16px;border-radius:10px;border:1px solid var(--border);background:#ffffff05;color:var(--text);max-width:320px;text-align:center;font-size:0.85rem">' + b + '</div>' +
+    (i < boxes.length - 1 ? '<div style="color:var(--muted);font-size:16px">↓</div>' : '')
+  ).join('');
+  document.getElementById('simContainer').innerHTML =
+    '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:400px;text-align:center;padding:20px">' +
+      '<div style="font-size:2.5rem;opacity:0.5">🛠️</div>' +
+      '<div style="font-size:1.05rem;font-weight:700;color:var(--text)">인터랙티브 시뮬레이션 준비 중</div>' +
+      '<div style="font-size:0.85rem;color:var(--muted);max-width:340px;line-height:1.6">이 노드는 아직 체험형 시뮬레이션이 없습니다. 아래는 이 기술의 개념 흐름입니다.</div>' +
+      '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:10px">' + flow + '</div>' +
+    '</div>';
 }
 
 window.addEventListener('hashchange', loadNode);

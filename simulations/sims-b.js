@@ -72,9 +72,9 @@ function sim18() {
     }
     draw();
   };
-  document.getElementById('simContainer').innerHTML = '';
-  document.getElementById('simContainer').appendChild(canvas);
-  document.getElementById('simContainer').innerHTML += `<div class="sim-info" id="abacusVal" style="margin-top:8px;text-align:center">값: 0</div>`;
+  document.getElementById('simContainer').innerHTML = '<div id="simCanvasHolder"></div>';
+  document.querySelector('#simCanvasHolder').appendChild(canvas);
+  document.querySelector('#simCanvasHolder').insertAdjacentHTML('afterend', `<div class="sim-info" id="abacusVal" style="margin-top:8px;text-align:center">값: 0</div>`);
   draw();
 }
 
@@ -210,9 +210,9 @@ function sim27() {
     if (x >= 0 && x < 8 && y >= 0 && y < 12) grid[y][x] = !grid[y][x];
     draw();
   };
-  document.getElementById('simContainer').innerHTML = '';
-  document.getElementById('simContainer').appendChild(canvas);
-  document.getElementById('simContainer').innerHTML += `<div class="sim-info" id="cardCount" style="margin-top:10px;text-align:center">천공 수: 0</div>`;
+  document.getElementById('simContainer').innerHTML = '<div id="simCanvasHolder"></div>';
+  document.querySelector('#simCanvasHolder').appendChild(canvas);
+  document.querySelector('#simCanvasHolder').insertAdjacentHTML('afterend', `<div class="sim-info" id="cardCount" style="margin-top:10px;text-align:center">천공 수: 0</div>`);
   draw();
 }
 
@@ -234,7 +234,7 @@ function sim28() {
     ctx.lineTo(canvas.width, canvas.height / 2);
     ctx.stroke();
     if (points.length > 1) {
-      ctx.strokeStyle = 'var(--c)';
+      ctx.strokeStyle = simColor();
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(points[0].x, points[0].y);
@@ -243,7 +243,7 @@ function sim28() {
       for (let i = 1; i < points.length; i++) {
         const x1 = points[i - 1].x, y1 = points[i - 1].y;
         const x2 = points[i].x, y2 = points[i].y;
-        ctx.fillStyle = 'var(--c)20';
+        ctx.fillStyle = simColor() + '33';
         ctx.fillRect(x1, Math.min(y1, canvas.height / 2), x2 - x1, Math.abs(y2 - canvas.height / 2));
       }
     }
@@ -255,9 +255,9 @@ function sim28() {
     points.push({x, y});
     draw();
   };
-  document.getElementById('simContainer').innerHTML = '';
-  document.getElementById('simContainer').appendChild(canvas);
-  document.getElementById('simContainer').innerHTML += `<div class="sim-controls" style="margin-top:8px"><button class="sim-btn" onclick="points=[];draw()">초기화</button></div><p class="sim-info" style="margin-top:8px;text-align:center">곡선을 그려 적분 영역을 시각화합니다</p>`;
+  document.getElementById('simContainer').innerHTML = '<div id="simCanvasHolder"></div>';
+  document.querySelector('#simCanvasHolder').appendChild(canvas);
+  document.querySelector('#simCanvasHolder').insertAdjacentHTML('afterend', `<div class="sim-controls" style="margin-top:8px"><button class="sim-btn" onclick="points=[];draw()">초기화</button></div><p class="sim-info" style="margin-top:8px;text-align:center">곡선을 그려 적분 영역을 시각화합니다</p>`);
   window.points = points;
   window.draw = draw;
   draw();
@@ -281,7 +281,7 @@ function sim29() {
     ctx.moveTo(0, centerY);
     ctx.lineTo(canvas.width, centerY);
     ctx.stroke();
-    ctx.strokeStyle = 'var(--c)';
+    ctx.strokeStyle = simColor();
     ctx.lineWidth = 2;
     ctx.beginPath();
     let y = 50;
@@ -291,9 +291,9 @@ function sim29() {
     }
     ctx.stroke();
   };
-  document.getElementById('simContainer').innerHTML = '';
-  document.getElementById('simContainer').appendChild(canvas);
-  document.getElementById('simContainer').innerHTML += `<div style="padding:10px"><label style="display:flex;gap:8px;align-items:center">성장률 k: <input type="range" min="-1" max="1" step="0.1" value="0.5" style="flex:1;accent-color:var(--c)" oninput="k=this.value;draw(k)"><span id="kVal" style="font-family:monospace;font-weight:700;color:var(--c)">0.5</span></label></div>`;
+  document.getElementById('simContainer').innerHTML = '<div id="simCanvasHolder"></div>';
+  document.querySelector('#simCanvasHolder').appendChild(canvas);
+  document.querySelector('#simCanvasHolder').insertAdjacentHTML('afterend', `<div style="padding:10px"><label style="display:flex;gap:8px;align-items:center">성장률 k: <input type="range" min="-1" max="1" step="0.1" value="0.5" style="flex:1;accent-color:var(--c)" oninput="k=this.value;draw(k)"><span id="kVal" style="font-family:monospace;font-weight:700;color:var(--c)">0.5</span></label></div>`);
   window.k = k;
   window.draw = draw;
   draw(k);
@@ -344,7 +344,7 @@ function sim32() {
     ctx.fillStyle = '#111118';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     const cy = canvas.height / 2, w = canvas.width - 40;
-    ctx.strokeStyle = 'var(--c)80';
+    ctx.strokeStyle = simColor() + 'cc';
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let x = 0; x < w; x++) {
@@ -368,9 +368,9 @@ function sim32() {
       ctx.fill();
     }
   };
-  document.getElementById('simContainer').innerHTML = '';
-  document.getElementById('simContainer').appendChild(canvas);
-  document.getElementById('simContainer').innerHTML += `<div style="padding:10px"><label style="display:flex;gap:8px;align-items:center">샘플링 간격: <input type="range" min="2" max="50" step="2" value="5" style="flex:1;accent-color:var(--c)" oninput="sampleRate=this.value;draw(sampleRate)"><span id="srVal" style="font-family:monospace">5</span></label><p class="sim-info" style="margin-top:8px">파란 선: 아날로그 신호 | 주황 선: 디지털 샘플</p></div>`;
+  document.getElementById('simContainer').innerHTML = '<div id="simCanvasHolder"></div>';
+  document.querySelector('#simCanvasHolder').appendChild(canvas);
+  document.querySelector('#simCanvasHolder').insertAdjacentHTML('afterend', `<div style="padding:10px"><label style="display:flex;gap:8px;align-items:center">샘플링 간격: <input type="range" min="2" max="50" step="2" value="5" style="flex:1;accent-color:var(--c)" oninput="sampleRate=this.value;draw(sampleRate)"><span id="srVal" style="font-family:monospace">5</span></label><p class="sim-info" style="margin-top:8px">파란 선: 아날로그 신호 | 주황 선: 디지털 샘플</p></div>`);
   window.sampleRate = sampleRate;
   window.draw = draw;
   draw(sampleRate);

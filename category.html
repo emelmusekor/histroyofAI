@@ -61,7 +61,7 @@ const CAT_COLORS = {
   'I':'#3b82f6','J':'#a855f7','K':'#14b8a6','L':'#f59e0b','M':'#ef4444'
 };
 const CAT_EMOJI = {'A':'🔢','B':'⚙️','C':'💡','D':'💻','E':'🔍','F':'🌐','G':'🤖','H':'🧠','I':'📊','J':'🕸️','K':'💬','L':'🎨','M':'🎯'};
-const HAS_SIM = new Set([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]);
+const HAS_SIM = new Set([1,2,3,4,5,8,9,11,12,13,15,16,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]);
 
 function getCatFromHash() {
   const hash = location.hash.replace('#', '').toUpperCase();
@@ -97,7 +97,9 @@ function loadCategory() {
       const kws = (n['키워드'] || '').split(';').map(k=>k.trim()).filter(Boolean);
       const hasSim = HAS_SIM.has(n['번호']);
       card.innerHTML = `
-        ${hasSim ? '<div class="node-sim-badge">▶ 체험</div>' : ''}
+        ${hasSim
+          ? '<div class="node-sim-badge">▶ 체험</div>'
+          : '<div class="node-sim-badge" style="background:#ffffff08;color:var(--muted);border-color:var(--border)">준비 중</div>'}
         <div class="node-num">#${String(n['번호']).padStart(3,'0')}</div>
         <div class="node-name">${n['기술 노드']}</div>
         <div class="node-era">${n['대략적 시기']}</div>
