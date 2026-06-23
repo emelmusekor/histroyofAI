@@ -102,6 +102,7 @@ input[type=range]{accent-color:var(--c);cursor:pointer}
 </div>
 
 <script src="data.js"></script>
+<script src="simulations/loader.js"></script>
 <script>
 // ─── SETUP ──────────────────────────────────────────────────────────────────
 const CAT_COLORS={'A':'#6366f1','B':'#8b5cf6','C':'#a855f7','D':'#ec4899','E':'#f97316','F':'#eab308','G':'#22c55e','H':'#06b6d4','I':'#3b82f6','J':'#a855f7','K':'#14b8a6','L':'#f59e0b','M':'#ef4444'};
@@ -1579,18 +1580,18 @@ function sim175(){
 }
 
 // ─── SIMULATION DISPATCH ────────────────────────────────────────────────────
-const simMap={
-  1:sim1,3:sim3,8:sim8,9:sim9,11:sim11,13:sim13,18:sim18,
-  36:sim36,39:sim39,68:sim68,73:sim73,74:sim74,76:sim76,
-  84:sim84,103:sim103,127:sim127,140:sim140,150:sim150,
-  159:sim159,175:sim175,183:sim183,193:sim193,210:sim210
+// Wait for simulations to load from external files
+const checkAndRun = () => {
+  if (window.SIM_MAP && window.SIM_MAP[nodeId]) {
+    window.SIM_MAP[nodeId]();
+  } else {
+    defaultFlowSim();
+  }
 };
 
-if(simMap[nodeId]){
-  simMap[nodeId]();
-}else{
-  defaultFlowSim();
-}
+// Try immediately, then wait a bit if not ready
+setTimeout(checkAndRun, 100);
+setTimeout(checkAndRun, 500);
 </script>
 </body>
 </html>
